@@ -1,5 +1,6 @@
 import copy
 import correctionlib
+import numpy as np
 import awkward as ak
 from pathlib import Path
 
@@ -38,9 +39,9 @@ def add_top_boost_weight(events, weights_container, year, workflow, dataset, var
 
         # compute weight
         sf = cset["boost_weight"].evaluate(selected_st, selected_njet)
-        weight = ak.where(in_binning, sf, ak.ones_like(sf))
+        weight = ak.where(in_binning, sf, np.ones_like(sf))
     else:
-        weight = ak.ones(len(events))
+        weight = np.ones(len(events))
 
     weights_container.add(
         name="top_boost_weight",
