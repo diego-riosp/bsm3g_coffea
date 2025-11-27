@@ -109,7 +109,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def load_year_histograms(workflow: str, year: str, output_dir: Path):
+def load_year_histograms(year: str, output_dir: Path):
     """load and merge histograms from pre/post campaigns"""
     aux_map = {
         "2016": ["2016preVFP", "2016postVFP"],
@@ -123,12 +123,6 @@ def load_year_histograms(workflow: str, year: str, output_dir: Path):
         output_dir.parent / post_year / f"{post_year}_processed_histograms.coffea"
     )
     return accumulate([load(pre_file), load(post_file)])
-
-
-def load_histogram_file(path: Path):
-    if not path.exists():
-        return None
-    return load(path)
 
 
 if __name__ == "__main__":
@@ -153,7 +147,6 @@ if __name__ == "__main__":
     _, process_name_map, key_process_map = get_process_maps(workflow_config, args.year)
 
     if args.postprocess and (args.year not in ["2016", "2022", "2023"]):
-        # logging.info(workflow_config.to_yaml())
         print_header(f"Reading outputs from: {output_dir}")
 
         output_files = [
@@ -289,104 +282,105 @@ if __name__ == "__main__":
 
     if args.year in ["2016", "2022", "2023"]:
         if args.postprocess:
-            # load and accumulate processed 2016preVFP and 2016postVFP histograms
-            processed_histograms = load_year_histograms(
-                args.workflow, args.year, output_dir
-            )
+            processed_histograms = load_year_histograms(args.year, output_dir)
             save(
                 processed_histograms,
                 f"{output_dir}/{args.year}_processed_histograms.coffea",
             )
-            identifier_map = {"2016": "VFP", "2022": "EE", "2023": "BPix"}
-            identifier = identifier_map[args.year]
-
-            if args.workflow in [
-                "2b1e",
-                "2b1mu",
-                "1b1mu1e",
-                "1b1e1mu",
-                "1b1e",
-                "1b1mu",
-            ]:
-                print_header(f"Systematic uncertainty impact")
-                syst_df = uncertainty_table(processed_histograms, args.workflow)
-                syst_df.to_csv(
-                    f"{OUTPUT_DIR / args.workflow / args.year}/uncertainty_table.csv"
+        else:
+            postprocess_file = output_dir / f"{args.year}_processed_histograms.coffea"
+            if not postprocess_file.exists():
+                cmd = f"python3 run_postprocess.py -w {args.workflow} -y {args.year} --postprocess"
+                raise ValueError(
+                    f"Postprocess file not found. Please run:\n  '{cmd}' first"
                 )
-                logging.info(syst_df)
-                logging.info("\n")
 
-            for category in categories:
-                logging.info(f"category: {category}")
-                category_dir = output_dir / category
-                if not category_dir.exists():
-                    category_dir.mkdir(parents=True, exist_ok=True)
+            processed_histograms = load(str(postprocess_file))
 
-                # load and combine cutflow tables
-                print_header(f"Cutflow")
-                cutflow_pre = pd.read_csv(
+        identifier_map = {"2016": "VFP", "2022": "EE", "2023": "BPix"}
+        identifier = identifier_map[args.year]
+
+        if args.workflow in [
+            "2b1e",
+            "2b1mu",
+            "1b1mu1e",
+            "1b1e1mu",
+            "1b1e",
+            "1b1mu",
+        ]:
+            print_header(f"Systematic uncertainty impact")
+            syst_df = uncertainty_table(processed_histograms, args.workflow)
+            syst_df.to_csv(f"{output_dir}/uncertainty_table.csv")
+            logging.info(syst_df)
+            logging.info("\n")
+
+        for category in categories:
+            logging.info(f"category: {category}")
+            category_dir = output_dir / category
+            if not category_dir.exists():
+                category_dir.mkdir(parents=True, exist_ok=True)
+
+            # load and combine cutflow tables
+            print_header(f"Cutflow")
+            cutflow_pre = pd.read_csv(
+                output_dir.parent
+                / f"{args.year}pre{identifier}"
+                / category
+                / f"cutflow_{category}.csv",
+                index_col=0,
+            )
+            cutflow_post = pd.read_csv(
+                output_dir.parent
+                / f"{args.year}post{identifier}"
+                / category
+                / f"cutflow_{category}.csv",
+                index_col=0,
+            )
+            combined_cutflow = combine_cutflows(cutflow_pre, cutflow_post)
+            combined_cutflow.to_csv(category_dir / f"cutflow_{category}.csv")
+            logging.info(
+                combined_cutflow.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+            )
+            if not "eff" in args.workflow:
+                # load and combine results tables
+                results_pre = pd.read_csv(
                     output_dir.parent
                     / f"{args.year}pre{identifier}"
                     / category
-                    / f"cutflow_{category}.csv",
+                    / f"results_{category}.csv",
                     index_col=0,
                 )
-                cutflow_post = pd.read_csv(
+                results_post = pd.read_csv(
                     output_dir.parent
                     / f"{args.year}post{identifier}"
                     / category
-                    / f"cutflow_{category}.csv",
+                    / f"results_{category}.csv",
                     index_col=0,
                 )
-                combined_cutflow = combine_cutflows(cutflow_pre, cutflow_post)
-                combined_cutflow.to_csv(category_dir / f"cutflow_{category}.csv")
+                combined_results = combine_event_tables(
+                    results_pre, results_post, args.blind
+                )
+
+                print_header(f"Results")
                 logging.info(
-                    combined_cutflow.applymap(
-                        lambda x: f"{x:.2f}" if pd.notnull(x) else ""
+                    combined_results.applymap(
+                        lambda x: f"{x:.5f}" if pd.notnull(x) else ""
                     )
                 )
-                if not "eff" in args.workflow:
-                    # load and combine results tables
-                    results_pre = pd.read_csv(
-                        output_dir.parent
-                        / f"{args.year}pre{identifier}"
-                        / category
-                        / f"results_{category}.csv",
-                        index_col=0,
-                    )
-                    results_post = pd.read_csv(
-                        output_dir.parent
-                        / f"{args.year}post{identifier}"
-                        / category
-                        / f"results_{category}.csv",
-                        index_col=0,
-                    )
-                    combined_results = combine_event_tables(
-                        results_pre, results_post, args.blind
-                    )
-
-                    print_header(f"Results")
-                    logging.info(
-                        combined_results.applymap(
-                            lambda x: f"{x:.5f}" if pd.notnull(x) else ""
-                        )
-                    )
-                    logging.info("\n")
-                    combined_results.to_csv(category_dir / f"results_{category}.csv")
-                    if not args.blind:
-                        # save latex table
-                        latex_table_asymmetric = df_to_latex_asymmetric(
-                            combined_results
-                        )
-                        with open(
-                            category_dir / f"results_{category}_asymmetric.txt", "w"
-                        ) as f:
-                            f.write(latex_table_asymmetric)
-                        latex_table_average = df_to_latex_average(combined_results)
-                        with open(
-                            category_dir / f"results_{category}_average.txt", "w"
-                        ) as f:
-                            f.write(latex_table_average)
+                logging.info("\n")
+                combined_results.to_csv(category_dir / f"results_{category}.csv")
+                if not args.blind:
+                    # save latex table
+                    latex_table_asymmetric = df_to_latex_asymmetric(combined_results)
+                    with open(
+                        category_dir / f"results_{category}_asymmetric.txt", "w"
+                    ) as f:
+                        f.write(latex_table_asymmetric)
+                    latex_table_average = df_to_latex_average(combined_results)
+                    with open(
+                        category_dir / f"results_{category}_average.txt", "w"
+                    ) as f:
+                        f.write(latex_table_average)
 
     if args.postprocess:
         if args.workflow in ["1b1mu", "1b1e", "2b1e", "2b1mu", "1b1mu1e", "1b1e1mu"]:
@@ -409,12 +403,12 @@ if __name__ == "__main__":
 
         if not args.postprocess and args.year not in ["2016", "2022", "2023"]:
             postprocess_file = output_dir / f"{args.year}_processed_histograms.coffea"
-            processed_histograms = load_histogram_file(postprocess_file)
-            if processed_histograms is None:
+            if not postprocess_file.exists():
                 cmd = f"python3 run_postprocess.py -w {args.workflow} -y {args.year} --postprocess"
                 raise ValueError(
                     f"Postprocess file not found. Please run:\n  '{cmd}' first"
                 )
+            processed_histograms = load(str(postprocess_file))
 
         print_header("Plots")
         plotter = CoffeaPlotter(
