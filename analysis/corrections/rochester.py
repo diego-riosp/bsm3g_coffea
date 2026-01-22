@@ -517,17 +517,20 @@ def apply_rochester_corrections_run2(events, year):
     out_dict = dict({field: out[field] for field in fields})
 
     # Apply nominal correction
-    corrected_pt = out.pt_raw * ak.flatten(corrections)
-    out_dict["pt"] = corrected_pt
+    pt_nom = out.pt_raw * ak.flatten(corrections)
+    out_dict["pt"] = ak.where(out.pt_raw <= 200, pt_nom, out.pt_raw)
 
-    # Compute Rochester-shifted pt values
-    up = ak.flatten(muons)
-    pt_up = up.pt_raw * ak.flatten(corrections) + ak.flatten(errors)
-    up = ak.with_field(up, pt_up, where="pt")
+    # Compute Rochester-shifted pT values
+    pt_error = ak.where(
+        out.pt_raw <= 200, ak.flatten(errors), np.zeros_like(out.pt_raw)
+    )
+    pt_delta = out.pt_raw * pt_error
 
-    down = ak.flatten(muons)
-    pt_down = down.pt_raw * ak.flatten(corrections) - ak.flatten(errors)
-    down = ak.with_field(down, pt_down, where="pt")
+    pt_up = pt_nom + pt_delta
+    up = ak.with_field(ak.flatten(muons), pt_up, where="pt")
+
+    pt_down = pt_nom - pt_delta
+    down = ak.with_field(ak.flatten(muons), pt_down, where="pt")
 
     # Combine up/down shifts into RochesterSystematic structure
     out_dict["rochester"] = ak.zip(
