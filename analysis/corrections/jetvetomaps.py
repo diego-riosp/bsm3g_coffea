@@ -23,19 +23,19 @@ def apply_jetvetomaps(events: ak.Array, year: str, mapname: str = "jetvetomap"):
         "2023postBPix": "Summer23BPixPrompt23_RunD_V1",
     }
     cset = correctionlib.CorrectionSet.from_file(get_pog_json("jetvetomaps", year))
-    
+
     jets = events.Jet
     j, n = ak.flatten(jets), ak.num(jets)
-    
+
     jet_eta_mask = np.abs(j.eta) < 5.19
     jet_phi_mask = np.abs(j.phi) < 3.14
     in_jet_mask = jet_eta_mask & jet_phi_mask
-    
+
     in_jets = j.mask[in_jet_mask]
     jets_eta = ak.fill_none(in_jets.eta, 0.0)
     jets_phi = ak.fill_none(in_jets.phi, 0.0)
-    
+
     vetomaps = cset[hname[year]].evaluate(mapname, jets_eta, jets_phi)
-    vetomaps = ak.any(ak.unflatten(vetomaps, n) == 0, axis=1)
-    vetoed_events = events[vetomaps]
+    vetomaps_mask = ak.any(ak.unflatten(vetomaps, n) > 0, axis=1)
+    vetoed_events = events[~vetomaps_mask]
     return vetoed_events
