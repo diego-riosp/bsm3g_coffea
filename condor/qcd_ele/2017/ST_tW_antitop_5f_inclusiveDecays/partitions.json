@@ -1,0 +1,68 @@
+{
+    "1": {
+        "ST_tW_antitop_5f_inclusiveDecays_1": [
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2430000/0FBBC112-394B-D740-8816-5570A362D114.root",
+            "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2430000/95C7173C-D8C4-7E45-A02D-49B25A11DB1D.root",
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2430000/CE7B901C-149D-FD46-8A6B-2F615EA69178.root",
+            "root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2520000/236C9495-818F-554B-AE64-8DD569901B18.root",
+            "root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2520000/585A02A7-0385-C244-A0CF-E5D55F10B1CD.root",
+            "root://cmsio2.rc.ufl.edu:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2520000/75D87EBF-267B-7544-B9D1-E1FC1EDBDC42.root",
+            "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2520000/A2B0AE07-EA5F-3040-A268-D9F8CBC966E8.root",
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2520000/A9C232C5-2078-F242-BC9E-A3B6FEF28A9E.root",
+            "root://grid-cms-xrootd.physik.rwth-aachen.de:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2520000/BC90FF95-809B-404F-BBD0-C2AB45A7F5BD.root",
+            "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2520000/C859EA5C-3A76-1A47-AE3E-A55D534C7825.root"
+        ]
+    },
+    "2": {
+        "ST_tW_antitop_5f_inclusiveDecays_2": [
+            "root://xrootd-cms.infn.it:1194//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2530000/17A067C2-5318-D549-B985-D1943B135AF9.root",
+            "root://t2-xrdcms.lnl.infn.it:7070//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2530000/2232FBFC-C192-7941-8C6C-358694F1F697.root",
+            "root://t2dsk0011.cmsaf.mit.edu:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2530000/5111C596-D8D1-4946-B29D-9A08036ACCBE.root",
+            "root://xrootd01.jinr-t1.ru:1094//pnfs/jinr-t1.ru/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2530000/A0262B5B-7788-AA42-B04B-FF934E3F9AA0.root",
+            "root://xrootd-cms.infn.it:1194//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/2530000/F218497F-B4EB-D241-AE8B-1D091DC0EC7B.root",
+            "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/005276B6-64C4-404C-8917-C56EBA968927.root",
+            "root://xrootd01.jinr-t1.ru:1094//pnfs/jinr-t1.ru/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/23DBD7D4-720A-1A45-AFFB-9783D32BAA11.root",
+            "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/2DC1B25C-80BE-E74C-9E7B-70FE659E6287.root",
+            "root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/3FAE139F-6C92-DE4E-819B-9A91A2332F62.root"
+        ]
+    },
+    "3": {
+        "ST_tW_antitop_5f_inclusiveDecays_3": [
+            "root://t2dsk0011.cmsaf.mit.edu:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/424F9E01-52A2-AA44-BB39-EA0A4C28BBA2.root",
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/4953A481-8C7C-1244-AE47-4A5087B9D46E.root",
+            "root://t2dsk0011.cmsaf.mit.edu:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/58FA302E-8861-184F-8A69-21BD4CE37952.root",
+            "root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/5CABBDE8-1713-9940-8DF8-9792024F6379.root",
+            "root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/6B1CA381-AF6B-A34A-9739-1B58B50FF525.root",
+            "root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/7F945FB6-B418-2445-A176-8558D2487DAE.root",
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/806CAC61-C159-DF4E-A209-AB71A3AE5DFC.root",
+            "root://cms-se0.kipt.kharkov.ua//dpm/kipt.kharkov.ua/home/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/82679A7E-59E9-954C-892F-9B19480F461A.root",
+            "root://cmsio2.rc.ufl.edu:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/83BA8155-2C19-EF43-AE55-A83E01BF3153.root"
+        ]
+    },
+    "4": {
+        "ST_tW_antitop_5f_inclusiveDecays_4": [
+            "root://xrootd-cms.infn.it:1194//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/C40BBC27-9841-7843-8C55-62F895C9C529.root",
+            "root://t2dsk0011.cmsaf.mit.edu:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/C4D8FA4A-57F9-3642-892F-CA59AAB1E3C1.root",
+            "root://xrootd-vanderbilt.sites.opensciencegrid.org:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/CB50CDF5-2172-3949-830E-F7C32F69AA34.root",
+            "root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/CD90ED98-CFBB-0F4D-936B-BC8BBD51E369.root",
+            "root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/E2D0DED9-FD10-504E-9359-9962C834E73D.root",
+            "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/E730BC4C-FC09-5548-A450-1AACBCFAEA8A.root",
+            "root://xrootd01.jinr-t1.ru:1094//pnfs/jinr-t1.ru/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/0D61D519-0A88-A446-AD7F-94463A6C926E.root",
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/24F647D2-B7F9-9742-AAC0-639062B433B8.root",
+            "root://maite.iihe.ac.be:1094//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/4FBB4E46-23C2-784A-825D-741E31A12FD9.root"
+        ]
+    },
+    "5": {
+        "ST_tW_antitop_5f_inclusiveDecays_5": [
+            "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/500AD290-61AB-0648-9DAC-7E823E7AABC5.root",
+            "root://xrootd01.jinr-t1.ru:1094//pnfs/jinr-t1.ru/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/52B0A00C-407B-374E-A783-A3A8F94CBAD5.root",
+            "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/56567998-EAA4-4645-8E1A-B1DFEC190846.root",
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/581090AF-5731-0649-8EA7-7E33E26AA3A9.root",
+            "root://xrootd01.jinr-t1.ru:1094//pnfs/jinr-t1.ru/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/61C2F293-AFB9-1844-A892-9274D4FD21A1.root",
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/7CE3ACDF-27D1-6842-8718-AF644341571B.root",
+            "root://t2-xrdcms.lnl.infn.it:7070//store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/7E760924-7AED-BE48-9650-C95842D85CE0.root",
+            "root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/BEFE6F64-B427-8D41-AD04-654C9D8D3EAE.root",
+            "root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/50000/DB9574E6-F3D0-F544-9E70-5C8BFA032FCC.root"
+        ]
+    }
+}

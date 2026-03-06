@@ -1,0 +1,44 @@
+000 (14526955.015.000) 02/14 21:30:34 Job submitted from host: <188.184.90.62:9618?addrs=188.184.90.62-9618+[2001-1458-201-e4--100-238]-9618&alias=bigbird16.cern.ch&noUDP&sock=schedd_5196_9a2f>
+...
+040 (14526955.015.000) 02/14 21:31:43 Started transferring input files
+	Transferring to host: <188.185.192.83:9618?addrs=188.185.192.83-9618+[2001-1458-303-1f--100-4f]-9618&alias=b9p13p4805.cern.ch&noUDP&sock=slot1_13_3072718_8d50_72962>
+...
+040 (14526955.015.000) 02/14 21:31:43 Finished transferring input files
+...
+001 (14526955.015.000) 02/14 21:31:44 Job executing on host: <188.185.192.83:9618?addrs=188.185.192.83-9618+[2001-1458-303-1f--100-4f]-9618&alias=b9p13p4805.cern.ch&noUDP&sock=startd_3072506_2267>
+	SlotName: slot1_13@b9p13p4805.cern.ch
+	CondorScratchDir = "/pool/condor/dir_1089386"
+	Cpus = 1
+	Disk = 3899
+	GPUs = 0
+	Memory = 3000
+...
+006 (14526955.015.000) 02/14 21:31:59 Image size of job updated: 132524
+	130  -  MemoryUsage of job (MB)
+	132524  -  ResidentSetSize of job (KB)
+...
+006 (14526955.015.000) 02/14 21:35:38 Image size of job updated: 2357012
+	130  -  MemoryUsage of job (MB)
+	132524  -  ResidentSetSize of job (KB)
+...
+040 (14526955.015.000) 02/14 21:35:38 Started transferring output files
+...
+040 (14526955.015.000) 02/14 21:35:38 Finished transferring output files
+...
+004 (14526955.015.000) 02/14 21:35:38 Job was evicted.
+	(0) CPU times
+		Usr 0 00:06:32, Sys 0 00:00:11  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	11370  -  Run Bytes Sent By Job
+	70490  -  Run Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :        0        1         1 
+	   Disk (KB)            :      103       75      3899 
+	   GPUs                 :                           0 
+	   Memory (MB)          :      130     3000      3000 
+	   TimeExecute (s)      :      234                    
+	   TimeSlotBusy (s)     :      236                    
+...
+009 (14526955.015.000) 02/14 21:35:38 Job was aborted.
+	via condor_rm (by user driosper)
+...

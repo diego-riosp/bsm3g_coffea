@@ -1,0 +1,94 @@
++ JOBID=3
++ BASEDIR=/afs/cern.ch/user/d/driosper/bsm3g_coffea
++ X509PATH=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ export XRD_NETWORKSTACK=IPv4
++ XRD_NETWORKSTACK=IPv4
++ export XRD_RUNFORKHANDLER=1
++ XRD_RUNFORKHANDLER=1
++ export X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ voms-proxy-info -all -file /afs/cern.ch/user/d/driosper/private/x509up_u182284
+++ pwd
++ WORKDIR=/srv
++ declare -A ARGS
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''workflow'\''])'
++ ARGS[$key]=qcd_tf_ele_1bT1e
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''year'\''])'
++ ARGS[$key]=2017
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_path'\''])'
++ ARGS[$key]=/eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/BTagCSVF
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_format'\''])'
++ ARGS[$key]=coffea
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''dataset'\''])'
++ ARGS[$key]=BTagCSVF
++ CMD_ARGS='--workflow qcd_tf_ele_1bT1e --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/BTagCSVF --output_format coffea --dataset BTagCSVF_3'
++ python3 -c 'import json; json.dump(json.load(open('\''/srv/partitions.json'\''))['\''3'\''], open('\''/srv/partition_fileset.json'\'', '\''w'\''), indent=4)'
++ CMD_ARGS='--workflow qcd_tf_ele_1bT1e --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/BTagCSVF --output_format coffea --dataset BTagCSVF_3 --partition_json /srv/partition_fileset.json'
++ echo --workflow qcd_tf_ele_1bT1e --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/BTagCSVF --output_format coffea --dataset BTagCSVF_3 --partition_json /srv/partition_fileset.json
++ cd /afs/cern.ch/user/d/driosper/bsm3g_coffea
++ python3 submit.py --workflow qcd_tf_ele_1bT1e --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/BTagCSVF --output_format coffea --dataset BTagCSVF_3 --partition_json /srv/partition_fileset.json
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1654, in _work_function
+    out = processor_instance.process(events)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 112, in process
+    return self.process_shift(events, shift_name="nominal")
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 172, in process_shift
+    selection_manager.add(selection, eval(mask))
+  File "<string>", line 1, in <module>
+KeyError: 'bjet'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 221, in __call__
+    out = self.function(*args, **kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1367, in automatic_retries
+    raise e
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1336, in automatic_retries
+    return func(*args, **kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1656, in _work_function
+    raise Exception(f"Failed processing file: {item!r}") from e
+Exception: Failed processing file: WorkItem(dataset='BTagCSVF_3', filename='root://rdr.echo.stfc.ac.uk//store/data/Run2017F/BTagCSV/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/130000/0ACFD737-BA76-6C45-A3FA-0FC9790FEFD8.root', treename='Events', entrystart=192776, entrystop=289164, fileuuid=b'(\x1eV \xef\x02\x11\xeb\x9c\xf4\xa5\xa8\x93Z\xbe\xef', usermeta={})
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 786, in _processwith
+    merged = _watcher(FH, self, reducer, pool)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 402, in _watcher
+    batch = FH.fetch(len(FH.completed))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 286, in fetch
+    raise bad_futures[0].exception()
+Exception: Failed processing file: WorkItem(dataset='BTagCSVF_3', filename='root://rdr.echo.stfc.ac.uk//store/data/Run2017F/BTagCSV/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/130000/0ACFD737-BA76-6C45-A3FA-0FC9790FEFD8.root', treename='Events', entrystart=192776, entrystop=289164, fileuuid=b'(\x1eV \xef\x02\x11\xeb\x9c\xf4\xa5\xa8\x93Z\xbe\xef', usermeta={})
+Traceback (most recent call last):
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/submit.py", line 84, in <module>
+    main(args)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/submit.py", line 14, in main
+    out = processor.run_uproot_job(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/__init__.py", line 104, in _run_x_job
+    return run(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1700, in __call__
+    wrapped_out = self.run(fileset, processor_instance, treename)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1848, in run
+    wrapped_out, e = executor(chunks, closure, None)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 817, in __call__
+    return _processwith(pool=poolinstance, mergepool=mergepoolinstance)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 801, in _processwith
+    raise e from None
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 786, in _processwith
+    merged = _watcher(FH, self, reducer, pool)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 402, in _watcher
+    batch = FH.fetch(len(FH.completed))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 286, in fetch
+    raise bad_futures[0].exception()
+Exception: Failed processing file: WorkItem(dataset='BTagCSVF_3', filename='root://rdr.echo.stfc.ac.uk//store/data/Run2017F/BTagCSV/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/130000/0ACFD737-BA76-6C45-A3FA-0FC9790FEFD8.root', treename='Events', entrystart=192776, entrystop=289164, fileuuid=b'(\x1eV \xef\x02\x11\xeb\x9c\xf4\xa5\xa8\x93Z\xbe\xef', usermeta={})

@@ -1,0 +1,12 @@
+{
+    "workflow": "qcd_tf_ele_1bT1e",
+    "year": "2017",
+    "dataset": "ST_s-channel_4f_leptonDecays",
+    "nfiles": 10,
+    "eos": true,
+    "submit": true,
+    "output_format": "coffea",
+    "label": "",
+    "memory": "2000",
+    "output_path": "/eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/ST_s-channel_4f_leptonDecays"
+}

@@ -1,0 +1,48 @@
++ JOBID=3
++ BASEDIR=/afs/cern.ch/user/d/driosper/bsm3g_coffea
++ X509PATH=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ export XRD_NETWORKSTACK=IPv4
++ XRD_NETWORKSTACK=IPv4
++ export XRD_RUNFORKHANDLER=1
++ XRD_RUNFORKHANDLER=1
++ export X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ voms-proxy-info -all -file /afs/cern.ch/user/d/driosper/private/x509up_u182284
+++ pwd
++ WORKDIR=/srv
++ declare -A ARGS
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''workflow'\''])'
++ ARGS[$key]=qcd_ele
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''year'\''])'
++ ARGS[$key]=2017
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_path'\''])'
++ ARGS[$key]=/eos/user/d/driosper/bsm3g_coffea/outputs/qcd_ele/2017/WJetsToLNu_HT-400To600
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_format'\''])'
++ ARGS[$key]=coffea
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''dataset'\''])'
++ ARGS[$key]=WJetsToLNu_HT-400To600
++ CMD_ARGS='--workflow qcd_ele --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_ele/2017/WJetsToLNu_HT-400To600 --output_format coffea --dataset WJetsToLNu_HT-400To600_3'
++ python3 -c 'import json; json.dump(json.load(open('\''/srv/partitions.json'\''))['\''3'\''], open('\''/srv/partition_fileset.json'\'', '\''w'\''), indent=4)'
++ CMD_ARGS='--workflow qcd_ele --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_ele/2017/WJetsToLNu_HT-400To600 --output_format coffea --dataset WJetsToLNu_HT-400To600_3 --partition_json /srv/partition_fileset.json'
++ echo --workflow qcd_ele --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_ele/2017/WJetsToLNu_HT-400To600 --output_format coffea --dataset WJetsToLNu_HT-400To600_3 --partition_json /srv/partition_fileset.json
++ cd /afs/cern.ch/user/d/driosper/bsm3g_coffea
++ python3 submit.py --workflow qcd_ele --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_ele/2017/WJetsToLNu_HT-400To600 --output_format coffea --dataset WJetsToLNu_HT-400To600_3 --partition_json /srv/partition_fileset.json
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:173: RuntimeWarning: overflow encountered in power
+  - ((mL - 1) * (mL / betaL) ** (-mL) / eb2L * p / N) ** (1 / (1 - mL))
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:160: RuntimeWarning: overflow encountered in power
+  - ((mH - 1) * (mH / betaH) ** (-mH) / eb2H * (1 - p) / N)
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:160: RuntimeWarning: overflow encountered in power
+  - ((mH - 1) * (mH / betaH) ** (-mH) / eb2H * (1 - p) / N)
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:160: RuntimeWarning: overflow encountered in power
+  - ((mH - 1) * (mH / betaH) ** (-mH) / eb2H * (1 - p) / N)
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:173: RuntimeWarning: overflow encountered in power
+  - ((mL - 1) * (mL / betaL) ** (-mL) / eb2L * p / N) ** (1 / (1 - mL))
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:173: RuntimeWarning: overflow encountered in power
+  - ((mL - 1) * (mL / betaL) ** (-mL) / eb2L * p / N) ** (1 / (1 - mL))
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:173: RuntimeWarning: overflow encountered in power
+  - ((mL - 1) * (mL / betaL) ** (-mL) / eb2L * p / N) ** (1 / (1 - mL))

@@ -1,0 +1,45 @@
+000 (14795277.013.000) 03/06 21:51:22 Job submitted from host: <188.184.90.62:9618?addrs=188.184.90.62-9618+[2001-1458-201-e4--100-238]-9618&alias=bigbird16.cern.ch&noUDP&sock=schedd_5196_9a2f>
+...
+040 (14795277.013.000) 03/06 21:56:13 Started transferring input files
+	Transferring to host: <188.185.211.97:9618?addrs=188.185.211.97-9618+[2001-1458-303-16--100-5d]-9618&alias=b9p23p9262.cern.ch&noUDP&sock=slot1_15_3521_9ce8_184214>
+...
+040 (14795277.013.000) 03/06 21:56:13 Finished transferring input files
+...
+001 (14795277.013.000) 03/06 21:56:14 Job executing on host: <188.185.211.97:9618?addrs=188.185.211.97-9618+[2001-1458-303-16--100-5d]-9618&alias=b9p23p9262.cern.ch&noUDP&sock=startd_2986_b9e2>
+	SlotName: slot1_15@b9p23p9262.cern.ch
+	CondorScratchDir = "/pool/condor/dir_200158"
+	Cpus = 1
+	Disk = 3743
+	GPUs = 0
+	Memory = 3000
+...
+006 (14795277.013.000) 03/06 21:56:28 Image size of job updated: 339268
+	332  -  MemoryUsage of job (MB)
+	339268  -  ResidentSetSize of job (KB)
+...
+006 (14795277.013.000) 03/06 21:59:46 Image size of job updated: 6027884
+	5838  -  MemoryUsage of job (MB)
+	5977276  -  ResidentSetSize of job (KB)
+...
+021 (14795277.013.000) 03/06 21:59:46 Error from starter on slot1_15@b9p23p9262.cern.ch:
+	Job has gone over cgroup memory limit of 3000 megabytes. Last measured usage: 5886 megabytes.  Consider resubmitting with a higher request_memory.
+	Code 34 Subcode 0
+...
+004 (14795277.013.000) 03/06 21:59:46 Job was evicted.
+	(0) CPU times
+		Usr 0 00:04:47, Sys 0 00:03:16  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	47023  -  Run Bytes Received By Job
+	Error from slot1_15@b9p23p9262.cern.ch: Job has gone over cgroup memory limit of 3000 megabytes. Last measured usage: 5886 megabytes.  Consider resubmitting with a higher request_memory.
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :        0        1         1 
+	   Disk (KB)            :       80       50      3743 
+	   GPUs                 :                           0 
+	   Memory (MB)          :     5838     3000      3000 
+	   TimeSlotBusy (s)     :      214                    
+...
+012 (14795277.013.000) 03/06 21:59:46 Job was held.
+	Error from slot1_15@b9p23p9262.cern.ch: Job has gone over cgroup memory limit of 3000 megabytes. Last measured usage: 5886 megabytes.  Consider resubmitting with a higher request_memory.
+	Code 34 Subcode 0
+...

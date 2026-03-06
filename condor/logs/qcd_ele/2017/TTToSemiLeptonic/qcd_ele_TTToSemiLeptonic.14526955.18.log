@@ -1,0 +1,44 @@
+000 (14526955.018.000) 02/14 21:30:34 Job submitted from host: <188.184.90.62:9618?addrs=188.184.90.62-9618+[2001-1458-201-e4--100-238]-9618&alias=bigbird16.cern.ch&noUDP&sock=schedd_5196_9a2f>
+...
+040 (14526955.018.000) 02/14 21:31:44 Started transferring input files
+	Transferring to host: <188.185.212.103:9618?addrs=188.185.212.103-9618+[2001-1458-303-18--100-63]-9618&alias=b9p25p8981.cern.ch&noUDP&sock=slot1_13_9469_845a_158268>
+...
+040 (14526955.018.000) 02/14 21:31:44 Finished transferring input files
+...
+001 (14526955.018.000) 02/14 21:31:45 Job executing on host: <188.185.212.103:9618?addrs=188.185.212.103-9618+[2001-1458-303-18--100-63]-9618&alias=b9p25p8981.cern.ch&noUDP&sock=startd_8661_4dd8>
+	SlotName: slot1_13@b9p25p8981.cern.ch
+	CondorScratchDir = "/pool/condor/dir_2131899"
+	Cpus = 1
+	Disk = 3861
+	GPUs = 0
+	Memory = 3000
+...
+006 (14526955.018.000) 02/14 21:32:00 Image size of job updated: 79808
+	78  -  MemoryUsage of job (MB)
+	79808  -  ResidentSetSize of job (KB)
+...
+006 (14526955.018.000) 02/14 21:35:38 Image size of job updated: 2576368
+	78  -  MemoryUsage of job (MB)
+	79808  -  ResidentSetSize of job (KB)
+...
+040 (14526955.018.000) 02/14 21:35:38 Started transferring output files
+...
+040 (14526955.018.000) 02/14 21:35:38 Finished transferring output files
+...
+004 (14526955.018.000) 02/14 21:35:38 Job was evicted.
+	(0) CPU times
+		Usr 0 00:06:35, Sys 0 00:00:22  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	6623  -  Run Bytes Sent By Job
+	70490  -  Run Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :     2.25        1         1 
+	   Disk (KB)            :   102          75      3861 
+	   GPUs                 :                           0 
+	   Memory (MB)          :    78        3000      3000 
+	   TimeExecute (s)      :   233                       
+	   TimeSlotBusy (s)     :   235                       
+...
+009 (14526955.018.000) 02/14 21:35:38 Job was aborted.
+	via condor_rm (by user driosper)
+...

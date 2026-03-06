@@ -1,0 +1,104 @@
++ JOBID=2
++ BASEDIR=/afs/cern.ch/user/d/driosper/bsm3g_coffea
++ X509PATH=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ export XRD_NETWORKSTACK=IPv4
++ XRD_NETWORKSTACK=IPv4
++ export XRD_RUNFORKHANDLER=1
++ XRD_RUNFORKHANDLER=1
++ export X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ voms-proxy-info -all -file /afs/cern.ch/user/d/driosper/private/x509up_u182284
+++ pwd
++ WORKDIR=/srv
++ declare -A ARGS
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''workflow'\''])'
++ ARGS[$key]=qcd_tf_ele_1bT1e
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''year'\''])'
++ ARGS[$key]=2017
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_path'\''])'
++ ARGS[$key]=/eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/ST_tW_antitop_5f_inclusiveDecays
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_format'\''])'
++ ARGS[$key]=coffea
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''dataset'\''])'
++ ARGS[$key]=ST_tW_antitop_5f_inclusiveDecays
++ CMD_ARGS='--workflow qcd_tf_ele_1bT1e --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/ST_tW_antitop_5f_inclusiveDecays --output_format coffea --dataset ST_tW_antitop_5f_inclusiveDecays_2'
++ python3 -c 'import json; json.dump(json.load(open('\''/srv/partitions.json'\''))['\''2'\''], open('\''/srv/partition_fileset.json'\'', '\''w'\''), indent=4)'
++ CMD_ARGS='--workflow qcd_tf_ele_1bT1e --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/ST_tW_antitop_5f_inclusiveDecays --output_format coffea --dataset ST_tW_antitop_5f_inclusiveDecays_2 --partition_json /srv/partition_fileset.json'
++ echo --workflow qcd_tf_ele_1bT1e --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/ST_tW_antitop_5f_inclusiveDecays --output_format coffea --dataset ST_tW_antitop_5f_inclusiveDecays_2 --partition_json /srv/partition_fileset.json
++ cd /afs/cern.ch/user/d/driosper/bsm3g_coffea
++ python3 submit.py --workflow qcd_tf_ele_1bT1e --year 2017 --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_ele_1bT1e/2017/ST_tW_antitop_5f_inclusiveDecays --output_format coffea --dataset ST_tW_antitop_5f_inclusiveDecays_2 --partition_json /srv/partition_fileset.json
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1654, in _work_function
+    out = processor_instance.process(events)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 132, in process
+    return processor.accumulate(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/accumulator.py", line 95, in accumulate
+    accum = next(gen)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/accumulator.py", line 92, in <genexpr>
+    gen = (x for x in items if x is not None)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 133, in <genexpr>
+    self.process_shift(update(events, collections), name)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 172, in process_shift
+    selection_manager.add(selection, eval(mask))
+  File "<string>", line 1, in <module>
+KeyError: 'bjet'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 221, in __call__
+    out = self.function(*args, **kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1367, in automatic_retries
+    raise e
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1336, in automatic_retries
+    return func(*args, **kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1656, in _work_function
+    raise Exception(f"Failed processing file: {item!r}") from e
+Exception: Failed processing file: WorkItem(dataset='ST_tW_antitop_5f_inclusiveDecays_2', filename='root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/3FAE139F-6C92-DE4E-819B-9A91A2332F62.root', treename='Events', entrystart=0, entrystop=18582, fileuuid=b':\xae\xef\xb6\x8d\xe0\x11\xec\xa2\x84\xca\xe9=\x86\xbe\xef', usermeta={})
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 786, in _processwith
+    merged = _watcher(FH, self, reducer, pool)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 402, in _watcher
+    batch = FH.fetch(len(FH.completed))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 286, in fetch
+    raise bad_futures[0].exception()
+Exception: Failed processing file: WorkItem(dataset='ST_tW_antitop_5f_inclusiveDecays_2', filename='root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/3FAE139F-6C92-DE4E-819B-9A91A2332F62.root', treename='Events', entrystart=0, entrystop=18582, fileuuid=b':\xae\xef\xb6\x8d\xe0\x11\xec\xa2\x84\xca\xe9=\x86\xbe\xef', usermeta={})
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:160: RuntimeWarning: overflow encountered in power
+  - ((mH - 1) * (mH / betaH) ** (-mH) / eb2H * (1 - p) / N)
+/opt/conda/lib/python3.9/site-packages/coffea/lookup_tools/doublecrystalball.py:160: RuntimeWarning: overflow encountered in power
+  - ((mH - 1) * (mH / betaH) ** (-mH) / eb2H * (1 - p) / N)
+Traceback (most recent call last):
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/submit.py", line 84, in <module>
+    main(args)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/submit.py", line 14, in main
+    out = processor.run_uproot_job(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/__init__.py", line 104, in _run_x_job
+    return run(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1700, in __call__
+    wrapped_out = self.run(fileset, processor_instance, treename)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1848, in run
+    wrapped_out, e = executor(chunks, closure, None)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 817, in __call__
+    return _processwith(pool=poolinstance, mergepool=mergepoolinstance)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 801, in _processwith
+    raise e from None
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 786, in _processwith
+    merged = _watcher(FH, self, reducer, pool)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 402, in _watcher
+    batch = FH.fetch(len(FH.completed))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 286, in fetch
+    raise bad_futures[0].exception()
+Exception: Failed processing file: WorkItem(dataset='ST_tW_antitop_5f_inclusiveDecays_2', filename='root://gfe02.grid.hep.ph.ic.ac.uk:1094//pnfs/hep.ph.ic.ac.uk/data/cms/store/mc/RunIISummer20UL17NanoAODv2/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV_PDFWeights-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v8-v1/40000/3FAE139F-6C92-DE4E-819B-9A91A2332F62.root', treename='Events', entrystart=0, entrystop=18582, fileuuid=b':\xae\xef\xb6\x8d\xe0\x11\xec\xa2\x84\xca\xe9=\x86\xbe\xef', usermeta={})

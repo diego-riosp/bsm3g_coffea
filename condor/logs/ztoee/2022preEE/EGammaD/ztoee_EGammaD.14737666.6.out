@@ -1,0 +1,214 @@
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez/CN=1573519443
+issuer    : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+identity  : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+type      : RFC compliant proxy
+strength  : 2048 bits
+path      : /afs/cern.ch/user/d/driosper/private/x509up_u182284
+timeleft  : 11:50:04
+key usage : Digital Signature, Key Encipherment
+=== VO cms extension information ===
+VO        : cms
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+issuer    : /DC=ch/DC=cern/OU=computers/CN=cms-auth.cern.ch
+attribute : /cms/Role=NULL/Capability=NULL
+timeleft  : 11:50:04
+uri       : voms-cms-auth.cern.ch:15000
+--workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/EGammaD --output_format coffea --dataset EGammaD_7 --partition_json /srv/partition_fileset.json
+  Preprocessing 100% ━━━━━━━━━━━━━━━━ 10/10 [ 0:00:16 < 0:00:00 | 0.7   file/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━ 10/10 [ 0:00:16 < 0:00:00 | ?   merges/s ]
+     Processing 100% ━━━━━━━━━━━━━━━━ 97/97 [ 0:15:35 < 0:00:00 | 0.2  chunk/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━ 97/97 [ 0:15:35 < 0:00:00 | ?   merges/s ]
+There are 20056 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22971 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20900 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23297 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22167 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23905 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20306 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23590 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19664 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21791 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14373 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20861 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 13225 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20484 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 13566 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20601 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 18291 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22117 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19239 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23036 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16014 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22008 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 15632 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20859 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19259 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21688 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19526 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 29968 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 18687 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22631 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19388 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22305 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 18250 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21898 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 15547 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21079 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 15025 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21151 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21222 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23525 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17311 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22567 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14431 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21217 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17174 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19143 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14988 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22062 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21389 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23183 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21422 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23521 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 24903 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 24295 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19039 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23204 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22743 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22597 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14118 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20419 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20956 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22596 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16134 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17877 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17001 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22506 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19384 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21518 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16473 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21186 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 13413 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20234 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19047 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23515 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19038 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22109 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19466 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22576 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17419 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21835 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17913 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21852 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22381 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23487 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20619 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23805 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 18221 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22975 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 13824 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21047 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 15935 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22081 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 15117 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21899 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19949 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20893 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16112 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22078 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19421 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23307 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22918 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23906 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20780 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22269 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 13327 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20680 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20477 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21935 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16851 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21525 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14033 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 15887 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 18556 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22681 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14987 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21720 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16785 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21074 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19061 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 24474 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 18415 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22699 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20187 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23295 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20036 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22274 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17776 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21916 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14125 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20908 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 15793 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 27246 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 18853 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22704 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20014 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23378 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20449 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23409 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 12965 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21371 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 15303 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22063 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14991 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21975 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20184 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23085 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22889 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23310 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21746 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 24284 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21458 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22943 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20826 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22177 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17223 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21641 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20887 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22581 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19794 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22096 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14099 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20885 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16853 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22363 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20133 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23023 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19676 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21825 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16553 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21151 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23777 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23985 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22897 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23773 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21143 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23568 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 18700 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21969 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20010 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22074 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 16213 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21561 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14013 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 20958 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21325 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 23720 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17406 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22375 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 13719 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 21742 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 17261 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22694 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 14822 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 22364 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.

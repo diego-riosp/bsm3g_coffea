@@ -155,7 +155,8 @@ corrections:
       - iso: false
       - reco: true
       - trigger: false
-    electron: false
+    electron:
+      - id: wp80iso
     tau: false
 histogram_config:
   flow: true
@@ -261,7 +262,7 @@ histogram_config:
         - 500
         - 800
       label: $m_T(e, p_T^{\text{miss}})$ [GeV]
-      expression: np.sqrt(2 * objects['dielectrons'].l1.pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['dielectrons'].l1.delta_phi(objects['met']))))
+      expression: np.sqrt(2 * objects['dielectrons'].l2.pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['dielectrons'].l2.delta_phi(objects['met']))))
   layout:
     multiplicity:
       - jet_multiplicity

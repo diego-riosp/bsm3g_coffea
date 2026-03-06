@@ -1,0 +1,12 @@
+{
+    "workflow": "qcd_tf_mu",
+    "year": "2022preEE",
+    "dataset": "WZ",
+    "nfiles": 10,
+    "eos": true,
+    "submit": false,
+    "output_format": "coffea",
+    "label": "",
+    "memory": "2000",
+    "output_path": "/eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_mu/2022preEE/WZ"
+}

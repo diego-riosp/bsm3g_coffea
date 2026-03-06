@@ -1,0 +1,144 @@
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez/CN=1573519443
+issuer    : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+identity  : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+type      : RFC compliant proxy
+strength  : 2048 bits
+path      : /afs/cern.ch/user/d/driosper/private/x509up_u182284
+timeleft  : 11:49:38
+key usage : Digital Signature, Key Encipherment
+=== VO cms extension information ===
+VO        : cms
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+issuer    : /DC=ch/DC=cern/OU=computers/CN=cms-auth.cern.ch
+attribute : /cms/Role=NULL/Capability=NULL
+timeleft  : 11:49:38
+uri       : voms-cms-auth.cern.ch:15000
+--workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/TTto4Q --output_format coffea --dataset TTto4Q_10 --partition_json /srv/partition_fileset.json
+  Preprocessing 100% ━━━━━━━━━━━━━━━━━━ 9/9 [ 0:00:15 < 0:00:00 | 0.6   file/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━━━ 9/9 [ 0:00:15 < 0:00:00 | ?   merges/s ]
+     Processing  87% ━━━━━━━━━━━━━╸   27/31 [ 0:03:55 < 0:00:31 | 0.1  chunk/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━ 26/26 [ 0:03:50 < 0:00:00 | ?   merges/s ]
+There are 39750 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39750 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 142 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 50609 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39458 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39463 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 114 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 50572 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 37860 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 37860 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 117 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 48661 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38028 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38029 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 103 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 49028 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43233 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43233 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 126 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 55187 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38487 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38489 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 120 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 49830 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38714 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38714 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 114 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 49998 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43732 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43734 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 135 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 56418 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 5931 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 5931 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 19 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 7693 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39629 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39629 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 133 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 50410 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39857 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39859 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 124 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 50664 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 37877 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 37880 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 133 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 48995 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38180 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38181 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 123 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 48915 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38910 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38911 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 113 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 49398 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38414 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38416 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 150 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 49518 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43832 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43832 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 146 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 56391 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 26509 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 26510 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 91 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 33933 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 1644 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 1645 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 5 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 2219 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39392 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39393 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 143 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 50727 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39402 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39403 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 123 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 50811 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 37798 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 37799 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 117 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 49026 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 42796 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 42797 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 141 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 55243 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38371 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38371 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 143 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 49953 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43619 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43620 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 150 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 56160 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43850 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43851 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 149 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 56084 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39988 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 39990 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 132 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 51802 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 37751 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 37751 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 128 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 48930 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 42871 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 42871 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 151 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 55538 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38872 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 38874 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 127 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 49707 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 44006 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 44008 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 149 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 56247 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43682 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 43684 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 135 nan entries in the corrected pt. This might be due to the number of tracker layers hitting boundaries. Setting those entries to their initial value.
+There are 56133 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.

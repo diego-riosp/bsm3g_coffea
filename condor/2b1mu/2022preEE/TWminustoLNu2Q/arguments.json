@@ -1,0 +1,12 @@
+{
+    "workflow": "2b1mu",
+    "year": "2022preEE",
+    "dataset": "TWminustoLNu2Q",
+    "nfiles": 10,
+    "eos": true,
+    "submit": false,
+    "output_format": "coffea",
+    "label": "",
+    "memory": "2000",
+    "output_path": "/eos/user/d/driosper/bsm3g_coffea/outputs/2b1mu/2022preEE/TWminustoLNu2Q"
+}

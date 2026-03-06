@@ -13,7 +13,7 @@ object_selection:
     cuts:
       - events.Electron.pt > 10
       - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
-      - working_points.electrons_id(events, 'wp80iso')
+      - working_points.electrons_id(events, 'medium')
   muons:
     field: events.Muon
     cuts:
@@ -95,7 +95,7 @@ corrections:
     lhescaleWeight: false
     partonshowerWeight: true
     electron:
-      - id: wp80iso
+      - id: medium
       - reco: true
       - trigger: true
 histogram_config:

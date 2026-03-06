@@ -1,0 +1,127 @@
++ JOBID=1
++ BASEDIR=/afs/cern.ch/user/d/driosper/bsm3g_coffea
++ X509PATH=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ export XRD_NETWORKSTACK=IPv4
++ XRD_NETWORKSTACK=IPv4
++ export XRD_RUNFORKHANDLER=1
++ XRD_RUNFORKHANDLER=1
++ export X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ voms-proxy-info -all -file /afs/cern.ch/user/d/driosper/private/x509up_u182284
+++ pwd
++ WORKDIR=/srv
++ declare -A ARGS
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''workflow'\''])'
++ ARGS[$key]=ztoee
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''year'\''])'
++ ARGS[$key]=2022preEE
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_path'\''])'
++ ARGS[$key]=/eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/TTtoLNu2Q
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_format'\''])'
++ ARGS[$key]=coffea
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''dataset'\''])'
++ ARGS[$key]=TTtoLNu2Q
++ CMD_ARGS='--workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/TTtoLNu2Q --output_format coffea --dataset TTtoLNu2Q_1'
++ python3 -c 'import json; json.dump(json.load(open('\''/srv/partitions.json'\''))['\''1'\''], open('\''/srv/partition_fileset.json'\'', '\''w'\''), indent=4)'
++ CMD_ARGS='--workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/TTtoLNu2Q --output_format coffea --dataset TTtoLNu2Q_1 --partition_json /srv/partition_fileset.json'
++ echo --workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/TTtoLNu2Q --output_format coffea --dataset TTtoLNu2Q_1 --partition_json /srv/partition_fileset.json
++ cd /afs/cern.ch/user/d/driosper/bsm3g_coffea
++ python3 submit.py --workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/TTtoLNu2Q --output_format coffea --dataset TTtoLNu2Q_1 --partition_json /srv/partition_fileset.json
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: divide by zero encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in power
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: divide by zero encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in power
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: divide by zero encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in power
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: divide by zero encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in power
+  result = getattr(ufunc, method)(
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1654, in _work_function
+    out = processor_instance.process(events)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 132, in process
+    return processor.accumulate(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/accumulator.py", line 95, in accumulate
+    accum = next(gen)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/accumulator.py", line 92, in <genexpr>
+    gen = (x for x in items if x is not None)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 133, in <genexpr>
+    self.process_shift(update(events, collections), name)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 194, in process_shift
+    weights_container = weight_manager(
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/corrections/corrections_manager.py", line 204, in weight_manager
+    electron_corrector.add_hlt_weights(
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/corrections/electron.py", line 275, in add_hlt_weights
+    assert (
+AssertionError: there's only available muon trigger SF for 'wp80iso' ID
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 221, in __call__
+    out = self.function(*args, **kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1367, in automatic_retries
+    raise e
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1336, in automatic_retries
+    return func(*args, **kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1656, in _work_function
+    raise Exception(f"Failed processing file: {item!r}") from e
+Exception: Failed processing file: WorkItem(dataset='TTtoLNu2Q_1', filename='root://maite.iihe.ac.be:1094//store/mc/Run3Summer22NanoAODv12/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_v5-v2/2520000/660979e9-a672-4654-aee2-aa4686dd3ca0.root', treename='Events', entrystart=0, entrystop=103208, fileuuid=b'\x8a\x91\xeb\x9ac\xaa\x11\xee\x9e\xdf\x0c\x8e\xd3\x80\xbe\xef', usermeta={})
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 786, in _processwith
+    merged = _watcher(FH, self, reducer, pool)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 402, in _watcher
+    batch = FH.fetch(len(FH.completed))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 286, in fetch
+    raise bad_futures[0].exception()
+Exception: Failed processing file: WorkItem(dataset='TTtoLNu2Q_1', filename='root://maite.iihe.ac.be:1094//store/mc/Run3Summer22NanoAODv12/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_v5-v2/2520000/660979e9-a672-4654-aee2-aa4686dd3ca0.root', treename='Events', entrystart=0, entrystop=103208, fileuuid=b'\x8a\x91\xeb\x9ac\xaa\x11\xee\x9e\xdf\x0c\x8e\xd3\x80\xbe\xef', usermeta={})
+Traceback (most recent call last):
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/submit.py", line 84, in <module>
+    main(args)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/submit.py", line 14, in main
+    out = processor.run_uproot_job(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/__init__.py", line 104, in _run_x_job
+    return run(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1700, in __call__
+    wrapped_out = self.run(fileset, processor_instance, treename)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1848, in run
+    wrapped_out, e = executor(chunks, closure, None)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 817, in __call__
+    return _processwith(pool=poolinstance, mergepool=mergepoolinstance)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 801, in _processwith
+    raise e from None
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 786, in _processwith
+    merged = _watcher(FH, self, reducer, pool)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 402, in _watcher
+    batch = FH.fetch(len(FH.completed))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 286, in fetch
+    raise bad_futures[0].exception()
+Exception: Failed processing file: WorkItem(dataset='TTtoLNu2Q_1', filename='root://maite.iihe.ac.be:1094//store/mc/Run3Summer22NanoAODv12/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_v5-v2/2520000/660979e9-a672-4654-aee2-aa4686dd3ca0.root', treename='Events', entrystart=0, entrystop=103208, fileuuid=b'\x8a\x91\xeb\x9ac\xaa\x11\xee\x9e\xdf\x0c\x8e\xd3\x80\xbe\xef', usermeta={})

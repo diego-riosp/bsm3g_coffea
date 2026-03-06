@@ -1,0 +1,12 @@
+{
+    "workflow": "ztoee",
+    "year": "2022preEE",
+    "dataset": "TTtoLNu2Q",
+    "nfiles": 10,
+    "eos": true,
+    "submit": true,
+    "output_format": "coffea",
+    "label": "",
+    "memory": "2000",
+    "output_path": "/eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/TTtoLNu2Q"
+}

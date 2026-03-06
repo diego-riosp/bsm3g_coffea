@@ -1,0 +1,58 @@
++ JOBID=14
++ BASEDIR=/afs/cern.ch/user/d/driosper/bsm3g_coffea
++ X509PATH=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ export XRD_NETWORKSTACK=IPv4
++ XRD_NETWORKSTACK=IPv4
++ export XRD_RUNFORKHANDLER=1
++ XRD_RUNFORKHANDLER=1
++ export X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ voms-proxy-info -all -file /afs/cern.ch/user/d/driosper/private/x509up_u182284
+++ pwd
++ WORKDIR=/srv
++ declare -A ARGS
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''workflow'\''])'
++ ARGS[$key]=ztoee
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''year'\''])'
++ ARGS[$key]=2022preEE
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_path'\''])'
++ ARGS[$key]=/eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/DYJetsToLL_inclusive_10to50
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_format'\''])'
++ ARGS[$key]=coffea
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''dataset'\''])'
++ ARGS[$key]=DYJetsToLL_inclusive_10to50
++ CMD_ARGS='--workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/DYJetsToLL_inclusive_10to50 --output_format coffea --dataset DYJetsToLL_inclusive_10to50_14'
++ python3 -c 'import json; json.dump(json.load(open('\''/srv/partitions.json'\''))['\''14'\''], open('\''/srv/partition_fileset.json'\'', '\''w'\''), indent=4)'
++ CMD_ARGS='--workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/DYJetsToLL_inclusive_10to50 --output_format coffea --dataset DYJetsToLL_inclusive_10to50_14 --partition_json /srv/partition_fileset.json'
++ echo --workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/DYJetsToLL_inclusive_10to50 --output_format coffea --dataset DYJetsToLL_inclusive_10to50_14 --partition_json /srv/partition_fileset.json
++ cd /afs/cern.ch/user/d/driosper/bsm3g_coffea
++ python3 submit.py --workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/DYJetsToLL_inclusive_10to50 --output_format coffea --dataset DYJetsToLL_inclusive_10to50_14 --partition_json /srv/partition_fileset.json
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: divide by zero encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in power
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: divide by zero encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in power
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: divide by zero encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in power
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: divide by zero encountered in divide
+  result = getattr(ufunc, method)(
+/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py:195: RuntimeWarning: invalid value encountered in power
+  result = getattr(ufunc, method)(

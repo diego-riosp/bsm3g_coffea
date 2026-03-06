@@ -1,0 +1,18 @@
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez/CN=2603696693
+issuer    : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+identity  : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+type      : RFC compliant proxy
+strength  : 2048 bits
+path      : /afs/cern.ch/user/d/driosper/private/x509up_u182284
+timeleft  : 10:08:20
+key usage : Digital Signature, Key Encipherment
+=== VO cms extension information ===
+VO        : cms
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+issuer    : /DC=ch/DC=cern/OU=computers/CN=cms-auth.cern.ch
+attribute : /cms/Role=NULL/Capability=NULL
+timeleft  : 10:08:20
+uri       : voms-cms-auth.cern.ch:15000
+--workflow qcd_tf_mu --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_mu/2022preEE/TbarWplustoLNu2Q --output_format coffea --dataset TbarWplustoLNu2Q_1 --partition_json /srv/partition_fileset.json
+  Preprocessing 100% ━━━━━━━━━━━━━━━━━━ 10/10 [ 0:01:14 < 0:00:00 | ?   file/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━━━   9/9 [ 0:00:22 < 0:00:00 | ? merges/s ]

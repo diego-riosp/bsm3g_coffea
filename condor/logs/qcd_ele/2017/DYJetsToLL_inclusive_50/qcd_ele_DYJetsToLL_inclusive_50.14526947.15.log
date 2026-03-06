@@ -1,0 +1,44 @@
+000 (14526947.015.000) 02/14 21:30:19 Job submitted from host: <188.184.90.62:9618?addrs=188.184.90.62-9618+[2001-1458-201-e4--100-238]-9618&alias=bigbird16.cern.ch&noUDP&sock=schedd_5196_9a2f>
+...
+040 (14526947.015.000) 02/14 21:31:19 Started transferring input files
+	Transferring to host: <188.185.213.223:9618?addrs=188.185.213.223-9618+[2001-1458-303-1b--100-5b]-9618&alias=b9p28p1071.cern.ch&noUDP&sock=slot1_9_3096_2977_185018>
+...
+040 (14526947.015.000) 02/14 21:31:19 Finished transferring input files
+...
+001 (14526947.015.000) 02/14 21:31:20 Job executing on host: <188.185.213.223:9618?addrs=188.185.213.223-9618+[2001-1458-303-1b--100-5b]-9618&alias=b9p28p1071.cern.ch&noUDP&sock=startd_2642_c54e>
+	SlotName: slot1_9@b9p28p1071.cern.ch
+	CondorScratchDir = "/pool/condor/dir_838057"
+	Cpus = 1
+	Disk = 3689
+	GPUs = 0
+	Memory = 3000
+...
+006 (14526947.015.000) 02/14 21:31:34 Image size of job updated: 335492
+	328  -  MemoryUsage of job (MB)
+	335492  -  ResidentSetSize of job (KB)
+...
+006 (14526947.015.000) 02/14 21:35:30 Image size of job updated: 2346536
+	328  -  MemoryUsage of job (MB)
+	335532  -  ResidentSetSize of job (KB)
+...
+040 (14526947.015.000) 02/14 21:35:30 Started transferring output files
+...
+040 (14526947.015.000) 02/14 21:35:30 Finished transferring output files
+...
+004 (14526947.015.000) 02/14 21:35:30 Job was evicted.
+	(0) CPU times
+		Usr 0 00:10:49, Sys 0 00:00:23  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	7517  -  Run Bytes Sent By Job
+	37821  -  Run Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :     2.41        1         1 
+	   Disk (KB)            :    70          40      3689 
+	   GPUs                 :                           0 
+	   Memory (MB)          :   328        3000      3000 
+	   TimeExecute (s)      :   250                       
+	   TimeSlotBusy (s)     :   252                       
+...
+009 (14526947.015.000) 02/14 21:35:30 Job was aborted.
+	via condor_rm (by user driosper)
+...

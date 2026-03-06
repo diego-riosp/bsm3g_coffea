@@ -1,0 +1,15 @@
+executable            = /afs/cern.ch/user/d/driosper/bsm3g_coffea/condor/submit.sh
+arguments             = $(JOBNUM) /afs/cern.ch/user/d/driosper/bsm3g_coffea /afs/cern.ch/user/d/driosper/private/x509up_u182284
+output                = /afs/cern.ch/user/d/driosper/bsm3g_coffea/condor/logs/2b1mu/2022preEE/TbarBQ/2b1mu_TbarBQ.$(ClusterId).$(ProcId).out
+error                 = /afs/cern.ch/user/d/driosper/bsm3g_coffea/condor/logs/2b1mu/2022preEE/TbarBQ/2b1mu_TbarBQ.$(ClusterId).$(ProcId).err
+log                   = /afs/cern.ch/user/d/driosper/bsm3g_coffea/condor/logs/2b1mu/2022preEE/TbarBQ/2b1mu_TbarBQ.$(ClusterId).$(ProcId).log
+
+should_transfer_files = YES
+transfer_input_files  = /afs/cern.ch/user/d/driosper/bsm3g_coffea/condor/2b1mu/2022preEE/TbarBQ/partitions.json,/afs/cern.ch/user/d/driosper/bsm3g_coffea/condor/2b1mu/2022preEE/TbarBQ/missing.txt,/afs/cern.ch/user/d/driosper/bsm3g_coffea/condor/2b1mu/2022preEE/TbarBQ/arguments.json
+
+request_memory        = 2000M
+
++JobFlavour           = "longlunch"
++SingularityImage     = "/cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask:latest-py3.9"
+
+Queue JOBNUM from /afs/cern.ch/user/d/driosper/bsm3g_coffea/condor/2b1mu/2022preEE/TbarBQ/missing.txt

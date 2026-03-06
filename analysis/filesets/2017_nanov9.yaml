@@ -58,6 +58,36 @@ SingleMuonF:
   key: muon
   query: SingleMuon/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD
   xsec: null
+BTagCSVB:
+  era: B
+  process: Data
+  key: bjet
+  query: BTagCSV/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD
+  xsec: null
+BTagCSVC:
+  era: C
+  process: Data
+  key: bjet
+  query: BTagCSV/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD
+  xsec: null
+BTagCSVD:
+  era: D
+  process: Data
+  key: bjet
+  query: BTagCSV/Run2017D-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD
+  xsec: null
+BTagCSVE:
+  era: E
+  process: Data
+  key: bjet
+  query: BTagCSV/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD
+  xsec: null
+BTagCSVF:
+  era: F
+  process: Data
+  key: bjet
+  query: BTagCSV/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD
+  xsec: null
 DYJetsToLL_M-4to50_HT-100to200:
   era: MC
   process: DYJetsToLL

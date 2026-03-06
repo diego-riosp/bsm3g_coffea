@@ -1,0 +1,150 @@
++ JOBID=28
++ BASEDIR=/afs/cern.ch/user/d/driosper/bsm3g_coffea
++ X509PATH=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ export XRD_NETWORKSTACK=IPv4
++ XRD_NETWORKSTACK=IPv4
++ export XRD_RUNFORKHANDLER=1
++ XRD_RUNFORKHANDLER=1
++ export X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ X509_USER_PROXY=/afs/cern.ch/user/d/driosper/private/x509up_u182284
++ voms-proxy-info -all -file /afs/cern.ch/user/d/driosper/private/x509up_u182284
+++ pwd
++ WORKDIR=/srv
++ declare -A ARGS
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''workflow'\''])'
++ ARGS[$key]=ztoee
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''year'\''])'
++ ARGS[$key]=2022preEE
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_path'\''])'
++ ARGS[$key]=/eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/EGammaC
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''output_format'\''])'
++ ARGS[$key]=coffea
++ for key in workflow year output_path output_format dataset
+++ python3 -c 'import json; print(json.load(open('\''/srv/arguments.json'\''))['\''dataset'\''])'
++ ARGS[$key]=EGammaC
++ CMD_ARGS='--workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/EGammaC --output_format coffea --dataset EGammaC_28'
++ python3 -c 'import json; json.dump(json.load(open('\''/srv/partitions.json'\''))['\''28'\''], open('\''/srv/partition_fileset.json'\'', '\''w'\''), indent=4)'
++ CMD_ARGS='--workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/EGammaC --output_format coffea --dataset EGammaC_28 --partition_json /srv/partition_fileset.json'
++ echo --workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/EGammaC --output_format coffea --dataset EGammaC_28 --partition_json /srv/partition_fileset.json
++ cd /afs/cern.ch/user/d/driosper/bsm3g_coffea
++ python3 submit.py --workflow ztoee --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022preEE/EGammaC --output_format coffea --dataset EGammaC_28 --partition_json /srv/partition_fileset.json
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1654, in _work_function
+    out = processor_instance.process(events)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/processors/base.py", line 93, in process
+    object_corrector_manager(
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/corrections/corrections_manager.py", line 42, in object_corrector_manager
+    apply_jerc_corrections(
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/analysis/corrections/jerc.py", line 113, in apply_jerc_corrections
+    (1 - jets.rawFactor) * jets.pt if apply_jec else jets.pt
+  File "/opt/conda/lib/python3.9/site-packages/numpy/lib/mixins.py", line 31, in func
+    return ufunc(other, self)
+  File "/opt/conda/lib/python3.9/site-packages/awkward/highlevel.py", line 1411, in __array_ufunc__
+    return ak._connect._numpy.array_ufunc(ufunc, method, inputs, kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/awkward/_connect/_numpy.py", line 250, in array_ufunc
+    out = ak._util.broadcast_and_apply(
+  File "/opt/conda/lib/python3.9/site-packages/awkward/_util.py", line 1172, in broadcast_and_apply
+    out = apply(broadcast_pack(inputs, isscalar), 0, user)
+  File "/opt/conda/lib/python3.9/site-packages/awkward/_util.py", line 925, in apply
+    outcontent = apply(nextinputs, depth + 1, user)
+  File "/opt/conda/lib/python3.9/site-packages/awkward/_util.py", line 753, in apply
+    return apply(nextinputs, depth, user)
+  File "/opt/conda/lib/python3.9/site-packages/awkward/_util.py", line 750, in apply
+    nextinputs.append(x.array)
+  File "/opt/conda/lib/python3.9/site-packages/awkward/operations/convert.py", line 4713, in _form_to_layout
+    container[key_format(form_key=fk, attribute="offsets", partition=partnum)]
+  File "/opt/conda/lib/python3.9/site-packages/coffea/nanoevents/mapping/base.py", line 90, in __getitem__
+    stack.append(self.extract_column(handle, start, stop))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/nanoevents/mapping/uproot.py", line 149, in extract_column
+    return columnhandle.array(
+  File "/opt/conda/lib/python3.9/site-packages/uproot/behaviors/TBranch.py", line 2208, in array
+    _ranges_or_baskets_to_arrays(
+  File "/opt/conda/lib/python3.9/site-packages/uproot/behaviors/TBranch.py", line 3493, in _ranges_or_baskets_to_arrays
+    uproot.source.futures.delayed_raise(*obj)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/futures.py", line 36, in delayed_raise
+    raise exception_value.with_traceback(traceback)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/behaviors/TBranch.py", line 3414, in chunk_to_basket
+    basket = uproot.models.TBasket.Model_TBasket.read(
+  File "/opt/conda/lib/python3.9/site-packages/uproot/model.py", line 837, in read
+    self.read_members(chunk, cursor, context, file)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/models/TBasket.py", line 223, in read_members
+    ) = cursor.fields(chunk, _tbasket_format1, context)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/cursor.py", line 197, in fields
+    return format.unpack(chunk.get(start, stop, self, context))
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/chunk.py", line 419, in get
+    self.wait(insist=stop)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/chunk.py", line 356, in wait
+    self._raw_data = numpy.frombuffer(self._future.result(), dtype=self._dtype)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/futures.py", line 116, in result
+    delayed_raise(*self._excinfo)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/futures.py", line 36, in delayed_raise
+    raise exception_value.with_traceback(traceback)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/futures.py", line 278, in _run
+    self._result = self._task(resource)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/xrootd.py", line 218, in task
+    return partfutures[0].result()
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/futures.py", line 116, in result
+    delayed_raise(*self._excinfo)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/futures.py", line 36, in delayed_raise
+    raise exception_value.with_traceback(traceback)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/xrootd.py", line 236, in callback
+    self._xrd_error(status)
+  File "/opt/conda/lib/python3.9/site-packages/uproot/source/xrootd.py", line 118, in _xrd_error
+    raise OSError(
+OSError: XRootD error: [ERROR] Operation expired
+in file root://xrootd-vanderbilt.sites.opensciencegrid.org:1094//store/data/Run2022C/EGamma/NANOAOD/22Sep2023-v1/40000/f13df640-b2bb-455a-b12e-591bdcf478c9.root
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 221, in __call__
+    out = self.function(*args, **kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1367, in automatic_retries
+    raise e
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1336, in automatic_retries
+    return func(*args, **kwargs)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1656, in _work_function
+    raise Exception(f"Failed processing file: {item!r}") from e
+Exception: Failed processing file: WorkItem(dataset='EGammaC_28', filename='root://xrootd-vanderbilt.sites.opensciencegrid.org:1094//store/data/Run2022C/EGamma/NANOAOD/22Sep2023-v1/40000/f13df640-b2bb-455a-b12e-591bdcf478c9.root', treename='Events', entrystart=693910, entrystop=793040, fileuuid=b'\xab$\xbb\xea[C\x11\xee\x8d\xb5H\t\r\n\xbe\xef', usermeta={})
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 786, in _processwith
+    merged = _watcher(FH, self, reducer, pool)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 402, in _watcher
+    batch = FH.fetch(len(FH.completed))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 286, in fetch
+    raise bad_futures[0].exception()
+Exception: Failed processing file: WorkItem(dataset='EGammaC_28', filename='root://xrootd-vanderbilt.sites.opensciencegrid.org:1094//store/data/Run2022C/EGamma/NANOAOD/22Sep2023-v1/40000/f13df640-b2bb-455a-b12e-591bdcf478c9.root', treename='Events', entrystart=693910, entrystop=793040, fileuuid=b'\xab$\xbb\xea[C\x11\xee\x8d\xb5H\t\r\n\xbe\xef', usermeta={})
+Traceback (most recent call last):
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/submit.py", line 84, in <module>
+    main(args)
+  File "/afs/cern.ch/user/d/driosper/bsm3g_coffea/submit.py", line 14, in main
+    out = processor.run_uproot_job(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/__init__.py", line 104, in _run_x_job
+    return run(
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1700, in __call__
+    wrapped_out = self.run(fileset, processor_instance, treename)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 1848, in run
+    wrapped_out, e = executor(chunks, closure, None)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 817, in __call__
+    return _processwith(pool=poolinstance, mergepool=mergepoolinstance)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 801, in _processwith
+    raise e from None
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 786, in _processwith
+    merged = _watcher(FH, self, reducer, pool)
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 402, in _watcher
+    batch = FH.fetch(len(FH.completed))
+  File "/opt/conda/lib/python3.9/site-packages/coffea/processor/executor.py", line 286, in fetch
+    raise bad_futures[0].exception()
+Exception: Failed processing file: WorkItem(dataset='EGammaC_28', filename='root://xrootd-vanderbilt.sites.opensciencegrid.org:1094//store/data/Run2022C/EGamma/NANOAOD/22Sep2023-v1/40000/f13df640-b2bb-455a-b12e-591bdcf478c9.root', treename='Events', entrystart=693910, entrystop=793040, fileuuid=b'\xab$\xbb\xea[C\x11\xee\x8d\xb5H\t\r\n\xbe\xef', usermeta={})

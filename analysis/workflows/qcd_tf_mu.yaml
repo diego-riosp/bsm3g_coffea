@@ -149,7 +149,7 @@ corrections:
     lhepdfWeight: false
     lhescaleWeight: false
     partonshowerWeight: true
-    MuBoostWeight: false
+    TopBoostWeight: false
     pujetid: 
       - id: tight
     btagging: 
@@ -261,7 +261,7 @@ histogram_config:
         - 500
         - 800
       label: $m_T(\mu, p_T^{\text{miss}})$ [GeV]
-      expression: np.sqrt(2 * objects['dimuons'].l1.pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['dimuons'].l1.delta_phi(objects['met']))))
+      expression: np.sqrt(2 * objects['dimuons'].l2.pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['dimuons'].l2.delta_phi(objects['met']))))
   layout:
     multiplicity:
       - jet_multiplicity

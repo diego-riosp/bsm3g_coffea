@@ -1,0 +1,10 @@
+{
+    "workflow": "qcd_ele",
+    "year": "2017",
+    "dataset": "DYJetsToLL_inclusive_50",
+    "nfiles": 10,
+    "eos": true,
+    "submit": true,
+    "output_format": "coffea",
+    "output_path": "/eos/user/d/driosper/bsm3g_coffea/outputs/qcd_ele/2017/DYJetsToLL_inclusive_50"
+}

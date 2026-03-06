@@ -1,0 +1,41 @@
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez/CN=2603696693
+issuer    : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+identity  : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+type      : RFC compliant proxy
+strength  : 2048 bits
+path      : /afs/cern.ch/user/d/driosper/private/x509up_u182284
+timeleft  : 10:08:33
+key usage : Digital Signature, Key Encipherment
+=== VO cms extension information ===
+VO        : cms
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=driosper/CN=886669/CN=Diego Alejandro Rios Perez
+issuer    : /DC=ch/DC=cern/OU=computers/CN=cms-auth.cern.ch
+attribute : /cms/Role=NULL/Capability=NULL
+timeleft  : 10:08:33
+uri       : voms-cms-auth.cern.ch:15000
+--workflow qcd_tf_mu --year 2022preEE --output_path /eos/user/d/driosper/bsm3g_coffea/outputs/qcd_tf_mu/2022preEE/DoubleMuonC --output_format coffea --dataset DoubleMuonC_1 --partition_json /srv/partition_fileset.json
+  Preprocessing 100% ━━━━━━━━━━━━━━━━━━ 6/6 [ 0:00:09 < 0:00:00 | 0.7   file/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━━━ 6/6 [ 0:00:09 < 0:00:00 | ?   merges/s ]
+     Processing 100% ━━━━━━━━━━━━━━━━ 21/21 [ 0:03:12 < 0:00:00 | 0.2  chunk/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━ 21/21 [ 0:03:12 < 0:00:00 | ?   merges/s ]
+There are 87213 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 91402 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 77471 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 81151 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 84936 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 90037 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 72996 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 78970 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 82520 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 82121 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 89306 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 69047 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 80855 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 4474 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 48450 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 86061 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 89760 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 72984 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 72336 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 78429 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.
+There are 81683 events with muon pt outside of [26,200] GeV. Setting those entries to their initial value.

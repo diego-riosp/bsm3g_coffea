@@ -11,6 +11,8 @@
   SingleEle:
     - Ele35_WPTight_Gsf
     - Photon200
+  BTagCSV:
+    - BTagMu_AK8Jet300_Mu5
 2018:
   SingleMu:
     - IsoMu24

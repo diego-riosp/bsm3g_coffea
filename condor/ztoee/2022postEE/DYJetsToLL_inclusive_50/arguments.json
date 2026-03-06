@@ -1,0 +1,10 @@
+{
+    "workflow": "ztoee",
+    "year": "2022postEE",
+    "dataset": "DYJetsToLL_inclusive_50",
+    "nfiles": 10,
+    "eos": true,
+    "submit": false,
+    "output_format": "coffea",
+    "output_path": "/eos/user/d/driosper/bsm3g_coffea/outputs/ztoee/2022postEE/DYJetsToLL_inclusive_50"
+}
