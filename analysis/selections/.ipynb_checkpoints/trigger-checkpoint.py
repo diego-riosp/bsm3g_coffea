@@ -133,10 +133,10 @@ def trigger_match(leptons: ak.Array, trigobjs: ak.Array, hlt_path: str, year: st
                 "id": abs(trigobjs.id) == 13,
             },
             "AK8PFJet40": {
-                "pt": trigobjs.pt > 22,
+                "pt": trigobjs.pt > 220,
                 "filterbit": (trigobjs.filterBits & 11) > 0,
                 "id": abs(trigobjs.id) == 1,
-            },
+            }
         },
         "Run3": {
             # filterbit: 3 => 1mu

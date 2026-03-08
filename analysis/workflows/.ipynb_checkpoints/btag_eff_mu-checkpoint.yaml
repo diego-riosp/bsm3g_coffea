@@ -3,29 +3,23 @@ datasets:
     - dy_inclusive
     - singletop
     - tt
+    - wjets_ht
     - diboson
 object_selection:
-  electrons:
-    field: events.Electron
-    add_cut:
-      is_loose:
-        - working_points.electrons_id(events, 'wpLiso')
-      is_tight:
-        - working_points.electrons_id(events, 'wp80iso')
-      is_loose_not_tight:
-        - working_points.electrons_id(events, 'wpLiso')
-        - ~working_points.electrons_id(events, 'wp80iso')
-    cuts:
-      - events.Electron.pt > 30
-      - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
   muons:
     field: events.Muon
     cuts:
       - events.Muon.pt > 30
       - np.abs(events.Muon.eta) < 2.4
-      - working_points.muons_iso(events, 'tight')
       - working_points.muons_id(events, 'tight')
-      - delta_r_mask(events.Muon, objects['electrons'], 0.4)
+      - working_points.muons_iso(events, 'tight')
+  electrons:
+    field: events.Electron
+    cuts:
+      - events.Electron.pt > 30
+      - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
+      - working_points.electrons_id(events, 'wp90iso')
+      - delta_r_mask(events.Electron, objects['muons'], 0.4)
   taus:
     field: events.Tau
     cuts:
@@ -55,40 +49,25 @@ object_selection:
       - delta_r_mask(events.Jet, objects['electrons'], 0.4)
       - delta_r_mask(events.Jet, objects['muons'], 0.4)
       - delta_r_mask(events.Jet, objects['taus'], 0.4)
-  bjets:
-    field: events.Jet
-    cuts:
-      - events.Jet.pt > 20
-      - np.abs(events.Jet.eta) < 2.4
-      - working_points.jets_btagging(events, 'medium', year)
-      - working_points.jets_id(events, year, 'tightlepveto')
-      - working_points.jets_pileup_id(events, 'tight', year)
-      - delta_r_mask(events.Jet, objects['electrons'], 0.4)
-      - delta_r_mask(events.Jet, objects['muons'], 0.4)
-      - delta_r_mask(events.Jet, objects['taus'], 0.4)
   met:
     field: select_met
 event_selection:
   hlt_paths:
-    bjet:
-      - BTagCSV
+    muon:
+      - SingleMu
   selections:
     goodvertex: events.PV.npvsGood > 0
     lumi: get_lumi_mask(events, year)
     trigger: get_trigger_mask(events, hlt_paths, dataset, year)
-    trigger_match: get_trigger_match_mask(events, hlt_paths, year, events.Jet)
+    trigger_match: get_trigger_match_mask(events, hlt_paths, year, events.Muon)
     metfilters: get_metfilters_mask(events, year)
     met_50: objects['met'].pt > 50
     hemcleaning: get_hemcleaning_mask(events, year)
-    at_least_one_bjet: ak.num(objects["bjets"]) > 0
-    one_electron: ak.num(objects['electrons']) == 1
-    muon_veto: ak.num(objects['muons']) == 0
+    exactly_one_muon: ak.num(objects['muons']) == 1
+    electron_veto: ak.num(objects['electrons']) == 0
     tau_veto: ak.num(objects['taus']) == 0
-    atleast_one_tight_bjet_one_tight_electron: (ak.num(objects['bjets']) > 0) & (ak.sum(objects['electrons'].is_tight, axis=-1) == 1)
-    atleast_one_tight_bjet_one_loose_electron: (ak.num(objects['bjets']) > 0) & (ak.sum(objects['electrons'].is_loose, axis=-1) == 1)
-    atleast_one_tight_bjet_one_loose_not_tight_electron: (ak.num(objects['bjets']) > 0) & (ak.sum(objects['electrons'].is_loose_not_tight, axis=-1) == 1)
   categories:
-    al1Tb1Te:
+    base:
       - goodvertex
       - lumi
       - trigger
@@ -96,37 +75,9 @@ event_selection:
       - metfilters
       - met_50
       - hemcleaning
-      - at_least_one_bjet
-      - one_electron
-      - muon_veto
+      - electron_veto
       - tau_veto
-      - atleast_one_tight_bjet_one_tight_electron
-    al1Tb1Le:
-      - goodvertex
-      - lumi
-      - trigger
-      - trigger_match
-      - metfilters
-      - met_50
-      - hemcleaning
-      - at_least_one_bjet
-      - one_electron
-      - muon_veto
-      - tau_veto
-      - atleast_one_tight_bjet_one_loose_electron
-    al1Tb1LnTe:
-      - goodvertex
-      - lumi
-      - trigger
-      - trigger_match
-      - metfilters
-      - met_50
-      - hemcleaning
-      - at_least_one_bjet
-      - one_electron
-      - muon_veto
-      - tau_veto
-      - atleast_one_tight_bjet_one_loose_not_tight_electron
+      - exactly_one_muon
 corrections:
   objects:
     - jets
@@ -148,10 +99,10 @@ corrections:
       - id: tight
     btagging: false
     muon:
-      - id: false
-      - iso: false
+      - id: tight
+      - iso: tight
       - reco: true
-      - trigger: false
+      - trigger: true
     electron: false
     tau: false
 histogram_config:
