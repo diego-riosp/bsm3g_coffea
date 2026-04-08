@@ -31,11 +31,7 @@ if __name__ == "__main__":
         "--image",
         dest="image",
         type=str,
-        choices=[
-            "/cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask:latest-py3.10",
-            "/cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask-almalinux8:latest",
-        ],
-        default="/cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask:latest-py3.10",
+        default="/cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask-almalinux9:2025.10.1-py3.10",
     )
     parser.add_argument(
         "--site",
@@ -62,10 +58,14 @@ if __name__ == "__main__":
         # initialize white/black sites
         cmd = f"python3 analysis/filesets/build_sites.py --year {args.year}"
         subprocess.run(cmd, shell=True)
-
-    # generate input filesets
+    
+    # keep container Python isolated from host user-site packages (~/.local),
+    # otherwise dask/distributed versions can be mixed
     samples_str = " ".join(args.samples) if args.samples else ""
-    cmd = f"singularity exec -B /afs -B /cvmfs {args.image} python3 analysis/filesets/build_filesets.py --year {args.year} --samples {samples_str}"
+    cmd = (
+        f"singularity exec --env PYTHONNOUSERSITE=1 -B /afs -B /cvmfs {args.image} "
+        f"python3 analysis/filesets/build_filesets.py --year {args.year} --samples {samples_str}"
+    )
     subprocess.run(cmd, shell=True)
 
     # add signal samples
