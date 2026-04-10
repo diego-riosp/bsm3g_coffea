@@ -1,0 +1,418 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "693b49e6-e752-4e62-a9b5-dfc6e3a006be",
+   "metadata": {},
+   "source": [
+    "## One Tight One Loose"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "ed03ad82-50c6-443e-901d-f6ddbcb3080b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/eos/home-i00/d/driosper/bsm3g_coffea\n"
+     ]
+    }
+   ],
+   "source": [
+    "%cd .."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "953b73da-0171-4c3a-9649-eff7d30ddf7e",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ModuleNotFoundError",
+     "evalue": "No module named 'analysis'",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)",
+      "\u001b[0;32m/tmp/ipykernel_1075/2547275632.py\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      8\u001b[0m \u001b[0;32mfrom\u001b[0m \u001b[0mpathlib\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mPath\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      9\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0myaml\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 10\u001b[0;31m \u001b[0;32mfrom\u001b[0m \u001b[0manalysis\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfilesets\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mutils\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mget_process_maps\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     11\u001b[0m \u001b[0;32mfrom\u001b[0m \u001b[0manalysis\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mworkflows\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mconfig\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mWorkflowConfigBuilder\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     12\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mjson\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'analysis'"
+     ]
+    }
+   ],
+   "source": [
+    "from coffea.util import load\n",
+    "import numpy as np\n",
+    "import mplhep as hep\n",
+    "from matplotlib.offsetbox import AnchoredText\n",
+    "import matplotlib.pyplot as plt\n",
+    "from coffea.processor import accumulate\n",
+    "from hist.intervals import poisson_interval\n",
+    "from pathlib import Path\n",
+    "import yaml\n",
+    "from analysis.filesets.utils import get_process_maps\n",
+    "from analysis.workflows.config import WorkflowConfigBuilder\n",
+    "import json\n",
+    "year = \"2017\"\n",
+    "out = load(f\"outputs/qcd_tf_ele/{year}/{year}_processed_histograms.coffea\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "bf23db11-1549-4403-b054-4badd4b121f0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "config_builder = WorkflowConfigBuilder(workflow=\"qcd_tf_ele\")\n",
+    "workflow_config = config_builder.build_workflow_config()\n",
+    "postprocess_dir = Path.cwd() / \"analysis\" / \"postprocess\"\n",
+    "style_file = postprocess_dir / \"style.yaml\"\n",
+    "luminosity_file = postprocess_dir / \"luminosity.yaml\"\n",
+    "color_map_file = postprocess_dir / \"color_map.yaml\"\n",
+    "\n",
+    "with open(style_file, \"r\") as f:\n",
+    "    style = yaml.safe_load(f)\n",
+    "with open(f\"{Path.cwd()}/analysis/postprocess/luminosity.yaml\", \"r\") as f:\n",
+    "    luminosities = yaml.safe_load(f)\n",
+    "\n",
+    "# set processes -> color and processes -> sample name maps\n",
+    "processes, process_name_map, _ = get_process_maps(workflow_config, year)\n",
+    "with open(color_map_file, \"r\") as f:\n",
+    "    color_map = yaml.safe_load(f)\n",
+    "color_map = {p: c for p, c in color_map.items() if p in processes}\n",
+    "\n",
+    "hep.style.use(hep.style.CMS)\n",
+    "plt.rcParams.update(style[\"rcParams\"])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3f6984d4-bcd7-44cd-8e5c-a3a98aa5ea5b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "year = \"2017\"\n",
+    "out = load(f\"outputs/qcd_tf_ele/{year}/{year}_processed_histograms.coffea\")\n",
+    "data = out[\"Data\"][\"transverse_mass\"][{\"variation\": \"nominal\"}]\n",
+    "\n",
+    "mc = accumulate([\n",
+    "    out[\"DYJetsToLL\"][\"transverse_mass\"][{\"variation\": \"nominal\"}],\n",
+    "    out[\"SingleTop\"][\"transverse_mass\"][{\"variation\": \"nominal\"}],\n",
+    "    out[\"tt\"][\"transverse_mass\"][{\"variation\": \"nominal\"}],\n",
+    "    out[\"Diboson\"][\"transverse_mass\"][{\"variation\": \"nominal\"}]\n",
+    "])\n",
+    "\n",
+    "histo = data + (mc * -1)\n",
+    "\n",
+    "variable = \"electron_met_mass\"\n",
+    "\n",
+    "h_loose = histo[{\"category\": \"1L\"}].project(variable)\n",
+    "h_tight = histo[{\"category\": \"1T\"}].project(variable)\n",
+    "\n",
+    "num = h_tight.values()\n",
+    "den = h_loose.values()\n",
+    "\n",
+    "var_num = h_tight.variances()\n",
+    "var_den = h_loose.variances()\n",
+    "\n",
+    "tf = np.divide(\n",
+    "    num,\n",
+    "    den,\n",
+    "    out=np.zeros_like(num),\n",
+    "    where=den != 0\n",
+    ")\n",
+    "\n",
+    "tf_var = np.zeros_like(tf)\n",
+    "\n",
+    "mask = den != 0\n",
+    "\n",
+    "tf_var[mask] = (\n",
+    "    (1.0 / den[mask])**2 * var_num[mask]\n",
+    "    +\n",
+    "    (num[mask] / den[mask]**2)**2 * var_den[mask]\n",
+    ")\n",
+    "\n",
+    "h_tf = h_loose.copy()\n",
+    "h_tf.values()[:] = tf\n",
+    "h_tf.variances()[:] = tf_var\n",
+    "\n",
+    "h_loose_not_tight = histo[{\"category\": \"1LnT\"}].project(variable)\n",
+    "h_qcd = h_loose_not_tight * tf\n",
+    "\n",
+    "########################\n",
+    "\n",
+    "# year = \"2017\"\n",
+    "# out = load(f\"outputs/qcd_ele/{year}/{year}_processed_histograms.coffea\")\n",
+    "# data = out[\"Data\"][\"mass\"][{\"variation\": \"nominal\"}]\n",
+    "\n",
+    "# mc = accumulate([\n",
+    "#     out[\"DYJetsToLL\"][\"mass\"][{\"variation\": \"nominal\"}],\n",
+    "#     out[\"SingleTop\"][\"mass\"][{\"variation\": \"nominal\"}],\n",
+    "#     out[\"tt\"][\"mass\"][{\"variation\": \"nominal\"}],\n",
+    "#     out[\"Diboson\"][\"mass\"][{\"variation\": \"nominal\"}]\n",
+    "# ])\n",
+    "\n",
+    "# histo = data + (mc * -1)\n",
+    "\n",
+    "# variable = \"electron_met_mass\"\n",
+    "\n",
+    "# h_base = histo.project(variable)\n",
+    "\n",
+    "# h_qcd = h_base * tf\n",
+    "\n",
+    "#######################"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "e3168ccc-903e-4934-b1cb-d41092702bf3",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "NameError",
+     "evalue": "name 'out' is not defined",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+      "\u001b[0;32m/tmp/ipykernel_1075/2767012166.py\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m#year = \"2017\"\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      2\u001b[0m \u001b[0;31m#out = load(f\"outputs/qcd_ele/{year}/{year}_processed_histograms.coffea\")\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 3\u001b[0;31m \u001b[0mtemplate\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mout\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"Data\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"mass\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      4\u001b[0m \u001b[0mh_qcd_out\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mtemplate\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcopy\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m \u001b[0mh_qcd_out\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mreset\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mNameError\u001b[0m: name 'out' is not defined"
+     ]
+    }
+   ],
+   "source": [
+    "#year = \"2017\"\n",
+    "#out = load(f\"outputs/qcd_ele/{year}/{year}_processed_histograms.coffea\")\n",
+    "template = out[\"Data\"][\"mass\"]\n",
+    "h_qcd_out = template.copy()\n",
+    "h_qcd_out.reset()\n",
+    "view = h_qcd_out.view()\n",
+    "var_axis = h_qcd_out.axes[\"variation\"]\n",
+    "idx_var = list(var_axis).index(\"nominal\")\n",
+    "view.value[:, 0, idx_var] = h_qcd.values()\n",
+    "view.variance[:, 0, idx_var] = h_qcd.variances()\n",
+    "out[\"QCD\"] = {\"mass\": h_qcd_out}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "eba18137-33d4-4b81-b57e-b6e25917922b",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "NameError",
+     "evalue": "name 'h_qcd' is not defined",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+      "\u001b[0;32m/tmp/ipykernel_1075/1406746733.py\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m     90\u001b[0m     \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msavefig\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"qcd.png\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     91\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 92\u001b[0;31m \u001b[0mplot_cms_histogram\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mh_qcd\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mvariable\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     93\u001b[0m \u001b[0mplot_cms_tf\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mh_tf\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mNameError\u001b[0m: name 'h_qcd' is not defined"
+     ]
+    }
+   ],
+   "source": [
+    "def plot_cms_tf(hist_histogram):\n",
+    "    hep.style.use(hep.style.CMS)\n",
+    "\n",
+    "    plt.rcParams.update({\n",
+    "        \"font.size\": 14,\n",
+    "        \"axes.titlesize\": 14,\n",
+    "        \"axes.labelsize\": 15,\n",
+    "        \"xtick.labelsize\": 10,\n",
+    "        \"ytick.labelsize\": 10,\n",
+    "        \"lines.markersize\": 2,\n",
+    "        \"legend.fontsize\": 10,\n",
+    "    })\n",
+    "\n",
+    "    fig, ax = plt.subplots(figsize=(7, 6))\n",
+    "\n",
+    "    edges = hist_histogram.axes[0].edges\n",
+    "    values = hist_histogram.values()\n",
+    "    variances = hist_histogram.variances()\n",
+    "\n",
+    "    centers = 0.5 * (edges[:-1] + edges[1:])\n",
+    "    widths = np.diff(edges)\n",
+    "    errors = np.sqrt(variances)\n",
+    "\n",
+    "    ax.bar(\n",
+    "        centers,\n",
+    "        values,\n",
+    "        width=widths,\n",
+    "        align=\"center\",\n",
+    "        alpha=0.2,\n",
+    "        color=\"green\",\n",
+    "        edgecolor=None\n",
+    "    )\n",
+    "\n",
+    "    for i in range(len(values)):\n",
+    "        ax.hlines(\n",
+    "            values[i],\n",
+    "            edges[i],\n",
+    "            edges[i+1],\n",
+    "            colors=\"black\",\n",
+    "            linewidth=1\n",
+    "        )\n",
+    "\n",
+    "    ax.errorbar(\n",
+    "        centers,\n",
+    "        values,\n",
+    "        yerr=errors,\n",
+    "        fmt='o',\n",
+    "        color='black',\n",
+    "        markersize=5,\n",
+    "        capsize=0,\n",
+    "        linewidth=1\n",
+    "    )\n",
+    "\n",
+    "    ax.set_ylabel(\"TF\")\n",
+    "    ax.set_xlabel(r\"$m_T(e, p_T^{miss})$ [GeV]\")\n",
+    "\n",
+    "    ax.set_ylim(0, np.max(values) * 1.2)\n",
+    "    ax.set_xlim(edges[0], edges[-1])\n",
+    "\n",
+    "    ax.tick_params(direction=\"in\", top=True, right=True)\n",
+    "\n",
+    "    hep.cms.lumitext(\"41.47 fb$^{-1}$ (2017, 13 TeV)\", fontsize=12, ax=ax)\n",
+    "    hep.cms.text(\"Preliminary\", loc=0, ax=ax)\n",
+    "\n",
+    "    plt.tight_layout()\n",
+    "    plt.savefig(\"qcd_tf.png\")\n",
+    "    plt.show()\n",
+    "    \n",
+    "def plot_cms_histogram(hist_histogram, variable):\n",
+    "    import mplhep as hep\n",
+    "    hep.style.use(hep.style.CMS)\n",
+    "    plt.rcParams.update(\n",
+    "        {\n",
+    "            \"font.size\": 14,\n",
+    "            \"axes.titlesize\": 14,\n",
+    "            \"axes.labelsize\": 15,\n",
+    "            \"xtick.labelsize\": 10,\n",
+    "            \"ytick.labelsize\": 10,\n",
+    "            \"lines.markersize\": 4,\n",
+    "            \"legend.fontsize\": 10,\n",
+    "        }\n",
+    "    )\n",
+    "    fig, ax = plt.subplots(figsize=(6, 5))\n",
+    "    hist_histogram.project(variable).plot1d(ax=ax)\n",
+    "    ax.set(ylabel=\"QCD Events\")\n",
+    "    edges = hist_histogram.axes[0].edges\n",
+    "    ax.set_xlim(edges[0], edges[-1])\n",
+    "    hep.cms.lumitext(\"41.47 fb$^{-1}$ (2017, 13 TeV)\", fontsize=9, ax=ax)\n",
+    "    hep.cms.text(\"OpenData\", loc=0, ax=ax)\n",
+    "    plt.savefig(\"qcd.png\")\n",
+    "    \n",
+    "plot_cms_histogram(h_qcd, variable)\n",
+    "plot_cms_tf(h_tf)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "adfdf9fd-831c-4019-b1a1-c986ad5b7bbe",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from analysis.postprocess.coffea_plotter import CoffeaPlotter\n",
+    "from coffea.util import save, load\n",
+    "from analysis.workflows.config import WorkflowConfigBuilder\n",
+    "\n",
+    "config_builder = WorkflowConfigBuilder(workflow=\"qcd_ele\")\n",
+    "workflow_config = config_builder.build_workflow_config()\n",
+    "\n",
+    "output_dir = Path.cwd() / \"outputs\" / \"qcd_ele\" / \"2017\"\n",
+    "postprocess_file = output_dir / f\"2017_processed_histograms.coffea\"\n",
+    "processed_histograms = load(str(postprocess_file))\n",
+    "\n",
+    "plotter = CoffeaPlotter(\n",
+    "    workflow=\"qcd_ele\",\n",
+    "    processed_histograms=out,\n",
+    "    year=\"2017\",\n",
+    "    output_dir=output_dir,\n",
+    ")\n",
+    "\n",
+    "# for category in workflow_config.event_selection[\"categories\"]:\n",
+    "#     for variable in workflow_config.histogram_config.variables:\n",
+    "#         plotter.plot_histograms(\n",
+    "#             variable=variable,\n",
+    "#             category=category,\n",
+    "#             log=True,\n",
+    "#             extension=\"png\",\n",
+    "#             add_ratio=True,\n",
+    "#             blind=False,\n",
+    "#         )\n",
+    "plotter.plot_histograms(\n",
+    "        variable=\"electron_met_mass\",\n",
+    "        category=\"base\",\n",
+    "        log=True,\n",
+    "        extension=\"png\",\n",
+    "        add_ratio=True,\n",
+    "        blind=False,\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "id": "2d832fba-973e-45c1-befc-de2b143525df",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[StairsArtists(stairs=<matplotlib.patches.StepPatch object at 0x7fce71dcd0d0>, errorbar=<ErrorbarContainer object of 3 artists>, legend_artist=<ErrorbarContainer object of 3 artists>)]"
+      ]
+     },
+     "execution_count": 37,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 720x720 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "out[\"Diboson\"][\"mass\"][{\"variation\":\"nominal\"}].project(variable).plot1d()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

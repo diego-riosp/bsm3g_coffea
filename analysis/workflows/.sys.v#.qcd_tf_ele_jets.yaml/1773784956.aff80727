@@ -1,0 +1,272 @@
+datasets:
+  data: 
+    - jet
+  mc:
+    - dy_inclusive
+    - singletop
+    - tt
+    - diboson
+object_selection:
+  electrons:
+    field: events.Electron
+    add_cut:
+      is_loose:
+        - working_points.electrons_id(events, 'wpLiso')
+      is_tight:
+        - working_points.electrons_id(events, 'wp80iso')
+      is_loose_not_tight:
+        - working_points.electrons_id(events, 'wpLiso')
+        - ~working_points.electrons_id(events, 'wp80iso')
+    cuts:
+      - events.Electron.pt > 30
+      - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
+  muons:
+    field: events.Muon
+    cuts:
+      - events.Muon.pt > 30
+      - np.abs(events.Muon.eta) < 2.4
+      - working_points.muons_iso(events, 'tight')
+      - working_points.muons_id(events, 'tight')
+      - delta_r_mask(events.Muon, objects['electrons'], 0.4)
+  taus:
+    field: events.Tau
+    cuts:
+      - events.Tau.pt > 20
+      - np.abs(events.Tau.eta) < 2.3
+      - np.abs(events.Tau.dz) < 0.2
+      - working_points.taus_vs_jet(events, 'loose')
+      - working_points.taus_vs_ele(events, 'vvloose')
+      - working_points.taus_vs_mu(events, 'loose')
+      - working_points.taus_decaymode(events, '13')
+      - delta_r_mask(events.Tau, objects['electrons'], 0.3)
+      - delta_r_mask(events.Tau, objects['muons'], 0.3)
+  jets:
+    field: events.Jet
+    cuts:
+      - events.Jet.pt > 20
+      - np.abs(events.Jet.eta) < 2.4
+      - working_points.jets_id(events, year, 'tightlepveto')
+      - working_points.jets_pileup_id(events, 'tight', year)
+      - delta_r_mask(events.Jet, objects['electrons'], 0.4)
+      - delta_r_mask(events.Jet, objects['muons'], 0.4)
+      - delta_r_mask(events.Jet, objects['taus'], 0.4)
+  bjets:
+    field: events.Jet
+    cuts:
+      - events.Jet.pt > 20
+      - np.abs(events.Jet.eta) < 2.4
+      - working_points.jets_btagging(events, 'medium', year)
+      - working_points.jets_id(events, year, 'tightlepveto')
+      - working_points.jets_pileup_id(events, 'tight', year)
+      - delta_r_mask(events.Jet, objects['electrons'], 0.4)
+      - delta_r_mask(events.Jet, objects['muons'], 0.4)
+      - delta_r_mask(events.Jet, objects['taus'], 0.4)
+  met:
+    field: select_met
+event_selection:
+  hlt_paths:
+    jet:
+      - JetHT
+  selections:
+    goodvertex: events.PV.npvsGood > 0
+    lumi: get_lumi_mask(events, year)
+    trigger: get_trigger_mask(events, hlt_paths, dataset, year)
+    metfilters: get_metfilters_mask(events, year)
+    met_50: objects['met'].pt > 50
+    hemcleaning: get_hemcleaning_mask(events, year)
+    atleast_one_bjet: ak.num(objects["bjets"]) > 0
+    muon_veto: ak.num(objects['muons']) == 0
+    tau_veto: ak.num(objects['taus']) == 0
+    one_electron: ak.num(objects['electrons']) == 1
+    one_tight_electron: ak.sum(objects['electrons'].is_tight, axis = 1) == 1
+    one_loose_electron: ak.sum(objects['electrons'].is_loose, axis = 1) == 1
+    one_loose_not_tight_electron: ak.sum(objects['electrons'].is_loose_not_tight, axis = 1) == 1
+  categories:
+    1T:
+      - goodvertex
+      - lumi
+      - trigger
+      - metfilters
+      - met_50
+      - hemcleaning
+      - muon_veto
+      - tau_veto
+      - one_electron
+      - atleast_one_bjet
+      - one_tight_electron
+    1L:
+      - goodvertex
+      - lumi
+      - trigger
+      - metfilters
+      - met_50
+      - hemcleaning
+      - muon_veto
+      - tau_veto
+      - atleast_one_bjet
+      - one_electron
+      - one_loose_electron
+    1LnT:
+      - goodvertex
+      - lumi
+      - trigger
+      - metfilters
+      - met_50
+      - hemcleaning
+      - muon_veto
+      - tau_veto
+      - atleast_one_bjet
+      - one_electron
+      - one_loose_not_tight_electron
+corrections:
+  objects:
+    - jets
+    - jets_veto
+    - muons
+    - taus
+    - met
+  apply_obj_syst: false
+  event_weights:
+    genWeight: true
+    pileupWeight: true
+    l1prefiringWeight: true
+    lhepdfWeight: true
+    lhescaleWeight: true
+    partonshowerWeight: true
+    topPtWeight: true
+    topBoostWeight: false
+    pujetid: 
+      - id: tight
+    btagging: false
+    muon:
+      - id: false
+      - iso: false
+      - reco: true
+      - trigger: false
+    electron: 
+      - id: wp80iso
+      - iso: true
+      - reco: true
+      - trigger: false
+    tau: false
+histogram_config:
+  flow: true
+  add_weight: true
+  add_syst_axis: true
+  axes:
+    bjet_pt:
+      type: Variable
+      edges:
+        - 50
+        - 80
+        - 110
+        - 140
+        - 180
+        - 210
+        - 240
+        - 270
+        - 300
+        - 500
+      label: $p_T(b)$ [GeV]
+      expression: objects['bjets'].pt
+    bjet_eta:
+      type: Regular
+      bins: 50
+      start: -2.4
+      stop: 2.4
+      label: $\eta(b)$
+      expression: objects['bjets'].eta
+    bjet_phi:
+      type: Regular
+      bins: 50
+      start: -3.14159
+      stop: 3.14159
+      label: $\phi(b)$
+      expression: objects['bjets'].phi
+    electron_tightid_wp:
+      type: Regular
+      bins: 2
+      start: 0
+      stop: 2
+      label: $e$ Pass Tight Selection
+      expression: objects['electrons'].is_tight
+    electron_pt:
+      type: Variable
+      edges:
+        - 50
+        - 80
+        - 110
+        - 140
+        - 180
+        - 210
+        - 240
+        - 270
+        - 300
+        - 500
+      label: $p_T(e)$ [GeV]
+      expression: objects['electrons'].pt
+    electron_eta:
+      type: Regular
+      bins: 50
+      start: -2.4
+      stop: 2.4
+      label: $\eta(e)$
+      expression: objects['electrons'].eta
+    electron_phi:
+      type: Regular
+      bins: 50
+      start: -3.14159
+      stop: 3.14159
+      label: $\phi(e)$
+      expression: objects['electrons'].phi
+    jet_multiplicity:
+      type: Integer
+      start: 0
+      stop: 14
+      label: Jet multiplicity
+      expression: ak.num(objects['jets'])
+    met_pt:
+      type: Variable
+      edges:
+        - 50
+        - 75
+        - 100
+        - 125
+        - 150
+        - 175
+        - 200
+        - 300
+        - 500
+      label: $p_T^{miss}$ [GeV]
+      expression: objects['met'].pt
+    electron_met_mass:
+      type: Variable
+      edges:
+        - 40
+        - 75
+        - 100
+        - 125
+        - 150
+        - 175
+        - 200
+        - 300
+        - 500
+        - 800
+      label: $m_T(e, p_T^{\text{miss}})$ [GeV]
+      expression: np.sqrt(2 * objects['electrons'].pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['electrons'].delta_phi(objects['met']))))
+  layout:
+    multiplicity:
+      - jet_multiplicity
+    transverse_mass:
+      - electron_met_mass
+    met:
+      - met_pt
+    bjet:
+      - bjet_pt
+      - bjet_eta
+      - bjet_phi
+    electron:
+      - electron_pt
+      - electron_eta
+      - electron_phi
+      - electron_tightid_wp

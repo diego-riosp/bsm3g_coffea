@@ -1,0 +1,274 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "693b49e6-e752-4e62-a9b5-dfc6e3a006be",
+   "metadata": {},
+   "source": [
+    "## One Tight One Loose"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "ed03ad82-50c6-443e-901d-f6ddbcb3080b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/eos/home-i00/d/driosper/bsm3g_coffea\n"
+     ]
+    }
+   ],
+   "source": [
+    "%cd .."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "953b73da-0171-4c3a-9649-eff7d30ddf7e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from coffea.util import load\n",
+    "import numpy as np\n",
+    "import mplhep as hep\n",
+    "from matplotlib.offsetbox import AnchoredText\n",
+    "import matplotlib.pyplot as plt\n",
+    "from coffea.processor import accumulate\n",
+    "from hist.intervals import poisson_interval\n",
+    "from pathlib import Path\n",
+    "import yaml\n",
+    "from analysis.filesets.utils import get_process_maps\n",
+    "from analysis.workflows.config import WorkflowConfigBuilder\n",
+    "import json"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "bf23db11-1549-4403-b054-4badd4b121f0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "year = \"2017\"\n",
+    "out = load(f\"outputs/qcd_tf_ele/{year}/{year}_processed_histograms.coffea\")\n",
+    "\n",
+    "\n",
+    "config_builder = WorkflowConfigBuilder(workflow=\"qcd_tf_ele\")\n",
+    "workflow_config = config_builder.build_workflow_config()\n",
+    "postprocess_dir = Path.cwd() / \"analysis\" / \"postprocess\"\n",
+    "style_file = postprocess_dir / \"style.yaml\"\n",
+    "luminosity_file = postprocess_dir / \"luminosity.yaml\"\n",
+    "color_map_file = postprocess_dir / \"color_map.yaml\"\n",
+    "\n",
+    "with open(style_file, \"r\") as f:\n",
+    "    style = yaml.safe_load(f)\n",
+    "with open(f\"{Path.cwd()}/analysis/postprocess/luminosity.yaml\", \"r\") as f:\n",
+    "    luminosities = yaml.safe_load(f)\n",
+    "\n",
+    "# set processes -> color and processes -> sample name maps\n",
+    "processes, process_name_map, _ = get_process_maps(workflow_config, year)\n",
+    "with open(color_map_file, \"r\") as f:\n",
+    "    color_map = yaml.safe_load(f)\n",
+    "color_map = {p: c for p, c in color_map.items() if p in processes}\n",
+    "\n",
+    "hep.style.use(hep.style.CMS)\n",
+    "plt.rcParams.update(style[\"rcParams\"])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "3f6984d4-bcd7-44cd-8e5c-a3a98aa5ea5b",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "KeyError",
+     "evalue": "\"'nominal' not in axis\"",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+      "\u001b[0;32m/tmp/ipykernel_3748/268145282.py\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mdata\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mout\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"Data\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"transverse_mass\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m{\u001b[0m\u001b[0;34m\"variation\"\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\"nominal\"\u001b[0m\u001b[0;34m}\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      2\u001b[0m mc = accumulate([\n\u001b[1;32m      3\u001b[0m     \u001b[0mout\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"DYJetsToLL\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"transverse_mass\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m{\u001b[0m\u001b[0;34m\"variation\"\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\"nominal\"\u001b[0m\u001b[0;34m}\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      4\u001b[0m     \u001b[0mout\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"SingleTop\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"transverse_mass\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m{\u001b[0m\u001b[0;34m\"variation\"\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\"nominal\"\u001b[0m\u001b[0;34m}\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m     \u001b[0mout\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"tt\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"transverse_mass\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m{\u001b[0m\u001b[0;34m\"variation\"\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\"nominal\"\u001b[0m\u001b[0;34m}\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/cvmfs/sft.cern.ch/lcg/views/LCG_105a_swan/x86_64-el9-gcc13-opt/lib/python3.9/site-packages/hist/basehist.py\u001b[0m in \u001b[0;36m__getitem__\u001b[0;34m(self, index)\u001b[0m\n\u001b[1;32m    323\u001b[0m         \"\"\"\n\u001b[1;32m    324\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 325\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0msuper\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m__getitem__\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_index_transform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mindex\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    326\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    327\u001b[0m     def __setitem__(  # type: ignore[override]\n",
+      "\u001b[0;32m/cvmfs/sft.cern.ch/lcg/views/LCG_105a_swan/x86_64-el9-gcc13-opt/lib/python3.9/site-packages/boost_histogram/_internal/hist.py\u001b[0m in \u001b[0;36m__getitem__\u001b[0;34m(self, index)\u001b[0m\n\u001b[1;32m    840\u001b[0m     ) -> Union[H, float, Accumulator]:\n\u001b[1;32m    841\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 842\u001b[0;31m         \u001b[0mindexes\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_compute_commonindex\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mindex\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    843\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    844\u001b[0m         \u001b[0;31m# If this is (now) all integers, return the bin contents\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/cvmfs/sft.cern.ch/lcg/views/LCG_105a_swan/x86_64-el9-gcc13-opt/lib/python3.9/site-packages/boost_histogram/_internal/hist.py\u001b[0m in \u001b[0;36m_compute_commonindex\u001b[0;34m(self, index)\u001b[0m\n\u001b[1;32m    748\u001b[0m                 \u001b[0mindexes\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mi\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_compute_uhi_index\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mind\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mi\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mind\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mindexes\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mi\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    749\u001b[0m             \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 750\u001b[0;31m                 \u001b[0mindexes\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mi\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_compute_uhi_index\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mindexes\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mi\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mi\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    751\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    752\u001b[0m         \u001b[0;32mreturn\u001b[0m \u001b[0mindexes\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/cvmfs/sft.cern.ch/lcg/views/LCG_105a_swan/x86_64-el9-gcc13-opt/lib/python3.9/site-packages/boost_histogram/_internal/hist.py\u001b[0m in \u001b[0;36m_compute_uhi_index\u001b[0;34m(self, index, axis)\u001b[0m\n\u001b[1;32m    700\u001b[0m         \u001b[0;31m# will be to properly set input types\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    701\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mcallable\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mindex\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 702\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mindex\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0maxes\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0maxis\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    703\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    704\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0misinstance\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mindex\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfloat\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m  \u001b[0;31m# type: ignore[unreachable]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/cvmfs/sft.cern.ch/lcg/views/LCG_105a_swan/x86_64-el9-gcc13-opt/lib/python3.9/site-packages/boost_histogram/tag.py\u001b[0m in \u001b[0;36m__call__\u001b[0;34m(self, axis)\u001b[0m\n\u001b[1;32m     71\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     72\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m__call__\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mAxisLike\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m->\u001b[0m \u001b[0mint\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 73\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mindex\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mvalue\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0moffset\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     74\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     75\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/cvmfs/sft.cern.ch/lcg/views/LCG_105a_swan/x86_64-el9-gcc13-opt/lib/python3.9/site-packages/boost_histogram/_internal/axis.py\u001b[0m in \u001b[0;36mindex\u001b[0;34m(self, value)\u001b[0m\n\u001b[1;32m    667\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    668\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0m_isstr\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mvalue\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 669\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_ax\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mindex\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mvalue\u001b[0m\u001b[0;34m)\u001b[0m  \u001b[0;31m# type: ignore[no-any-return]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    670\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    671\u001b[0m         \u001b[0mmsg\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34mf\"index({value}) must be a string or iterable of strings for a StrCategory axis\"\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mKeyError\u001b[0m: \"'nominal' not in axis\""
+     ]
+    }
+   ],
+   "source": [
+    "data = out[\"Data\"][\"transverse_mass\"][{\"variation\":\"nominal\"}]\n",
+    "mc = accumulate([\n",
+    "    out[\"DYJetsToLL\"][\"transverse_mass\"][{\"variation\":\"nominal\"}],\n",
+    "    out[\"SingleTop\"][\"transverse_mass\"][{\"variation\":\"nominal\"}],\n",
+    "    out[\"tt\"][\"transverse_mass\"][{\"variation\":\"nominal\"}],\n",
+    "    out[\"Diboson\"][\"transverse_mass\"][{\"variation\":\"nominal\"}]\n",
+    "])\n",
+    "\n",
+    "histo = data + (mc*-1)\n",
+    "v= \"electron_met_mass\"\n",
+    "\n",
+    "one_tight_one_loose = histo[{\"category\":'al1T1Le'}].project(v).values()\n",
+    "two_tight = histo[{\"category\":'al1Tb1Te'}].project(v).values()\n",
+    "\n",
+    "num = two_tight\n",
+    "den = one_tight_one_loose\n",
+    "\n",
+    "ratio = num / den\n",
+    "\n",
+    "tf = np.where( \n",
+    "    (num > 0) & (den > 0), \n",
+    "    num / (den + 1e-32),\n",
+    "    1\n",
+    ")\n",
+    "print(f\"Transfer factor:\\n{list(tf)}\")\n",
+    "print()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "a7df3c82-6be3-4ec7-a777-0018a2f10b82",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([-1837.30088814, -2792.67391637, -2294.08185655, -1024.61528967,\n",
+       "       -1048.84225674,  -725.9884242 ,  -993.99009188,    59.70786737,\n",
+       "          67.71177355])"
+      ]
+     },
+     "execution_count": 17,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    " histo[{\"category\":'1L1T'}].project(v).values()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "id": "3bd5c56b-8f45-43ea-8ecc-a3bd1badf92a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "out_qcd = load(f\"outputs/qcd_ele/{year}/{year}_processed_histograms.coffea\")\n",
+    "data_qcd = out_qcd[\"Data\"][\"mass\"][{\"variation\":\"nominal\"}]\n",
+    "mc_qcd = accumulate([\n",
+    "    out_qcd[\"DYJetsToLL\"][\"mass\"][{\"variation\":\"nominal\"}],\n",
+    "    out_qcd[\"SingleTop\"][\"mass\"][{\"variation\":\"nominal\"}],\n",
+    "    out_qcd[\"tt\"][\"mass\"][{\"variation\":\"nominal\"}],\n",
+    "    out_qcd[\"Diboson\"][\"mass\"][{\"variation\":\"nominal\"}],\n",
+    "    out_qcd[\"WJetsToLNu\"][\"mass\"][{\"variation\":\"nominal\"}]\n",
+    "])\n",
+    "\n",
+    "histo_qcd = data_qcd + (mc_qcd*-1)\n",
+    "\n",
+    "# La estimacion final de QCD es: qcd_ele(MT) x qcd_tf_ele(MT)\n",
+    "# histograma:\n",
+    "qcd = histo_qcd * tf"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "id": "6794d9fe-8d98-4c8b-bc70-dd3499f7ebee",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([41188.82587926, 46623.33129383, 29585.41631146,  9632.04373474,\n",
+       "        3565.26849539,  1681.67434891,  1822.18644733,   380.74724274,\n",
+       "         144.1589909 ])"
+      ]
+     },
+     "execution_count": 36,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "qcd_mt = histo_qcd.project(v).values()\n",
+    "qcd_mt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "id": "80e2f908-b80e-4ab7-ac4c-84a8c3b70b09",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Transfer factor:\n",
+      "[0.5803774636180589, 0.44701883216725896, 0.3838016669457719, 0.4050523307979631, 0.5414714423227709, 0.489602334815642, 0.620703376819264, 0.6583746841003641]\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "data = out[\"Data\"][\"met\"][{\"variation\":\"nominal\"}]\n",
+    "mc = accumulate([\n",
+    "    out[\"WJetsToLNu\"][\"met\"][{\"variation\":\"nominal\"}],\n",
+    "    out[\"SingleTop\"][\"met\"][{\"variation\":\"nominal\"}],\n",
+    "    out[\"tt\"][\"met\"][{\"variation\":\"nominal\"}],\n",
+    "    out[\"Diboson\"][\"met\"][{\"variation\":\"nominal\"}]\n",
+    "])\n",
+    "\n",
+    "histo = data + (mc*-1)\n",
+    "v= \"met_pt\"\n",
+    "one_tight_one_loose = histo[{\"category\":'1L1T'}].project(v).values()\n",
+    "two_tight = histo[{\"category\":'2T'}].project(v).values()\n",
+    "\n",
+    "num = np.abs(two_tight)\n",
+    "den = one_tight_one_loose\n",
+    "\n",
+    "\n",
+    "ratio = num / den\n",
+    "\n",
+    "tf_met = np.where(\n",
+    "    (num > 0) & (den > 0), \n",
+    "    num / (den + 1e-32),\n",
+    "    1\n",
+    ")\n",
+    "print(f\"Transfer factor:\\n{list(tf_met)}\")\n",
+    "print()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
