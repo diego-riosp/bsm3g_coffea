@@ -137,7 +137,7 @@ class ObjectSelector:
         
         qcd_tf_electrons["is_loose"] = working_points.electrons_id(self.events, 'loose') & working_points.electrons_iso(self.events, 'loose') 
         qcd_tf_electrons["is_tight"] = working_points.electrons_id(self.events, 'tight') & working_points.electrons_iso(self.events, 'tight')
-        qcd_tf_electrons["is_not_tight"] = ~(working_points.electrons_id(self.events, 'tight') & working_points.electrons_iso(self.events, 'tight'))
+        qcd_tf_electrons["is_not_tight"] = ~(working_points.electrons_id(self.events, 'wp90iso') & working_points.electrons_iso(self.events, 'tight'))
         qcd_tf_electrons["is_loose_not_tight"] = working_points.electrons_iso(self.events, 'loose') & working_points.electrons_id(self.events, 'loose') & ~working_points.electrons_id(self.events, 'tight')
         qcd_tf_electrons["is_barrel"] = np.abs(self.events.Electron.eta) < 1.44
 

@@ -11,7 +11,7 @@ object_selection:
     field: select_qcd_tf_electrons
     cuts:
       - events.Electron.pt > 30
-      - np.abs(events.Electron.eta) < 2.4
+      - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
   muons:
     field: events.Muon
     cuts:

@@ -3,6 +3,7 @@ datasets:
     - electron
   mc:
     - dy_inclusive
+    - wjets_ht
     - singletop
     - tt
     - diboson

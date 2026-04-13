@@ -178,29 +178,6 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
-   "id": "746e30c3-51cb-4d52-aeb0-f59d28c28cc4",
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "array([ 14.6367011 ,   1.85936556,  19.2497854 ,  33.37400059,\n",
-       "         4.20652669,   3.28027207, -10.27485648,  -6.2690465 ,\n",
-       "         2.70346446])"
-      ]
-     },
-     "execution_count": 12,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "histo[{\"category\": \"1LnT1T\"}].project(variable).values()"
-   ]
-  },
-  {
-   "cell_type": "code",
    "execution_count": 8,
    "id": "eba18137-33d4-4b81-b57e-b6e25917922b",
    "metadata": {},

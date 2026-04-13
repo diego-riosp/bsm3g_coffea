@@ -1,20 +1,13 @@
 datasets:
   mc:
     - dy_inclusive
+    - wjets_ht
     - singletop
     - tt
     - diboson
 object_selection:
   electrons:
-    field: events.Electron
-    add_cut:
-      is_loose:
-        - working_points.electrons_id(events, 'wpLiso')
-      is_tight:
-        - working_points.electrons_id(events, 'wp80iso')
-      is_loose_not_tight:
-        - working_points.electrons_id(events, 'wpLiso')
-        - ~working_points.electrons_id(events, 'wp80iso')
+    field: select_qcd_tf_electrons
     cuts:
       - events.Electron.pt > 30
       - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
@@ -64,7 +57,7 @@ object_selection:
       - working_points.jets_id(events, year, 'tightlepveto')
       - working_points.jets_pileup_id(events, 'tight', year)
       - delta_r_mask(events.Jet, objects['electrons'], 0.4)
-      - delta_r_mask(events.Jet, objects['muons'], 0.4)
+      - delta_r_ma3sk(events.Jet, objects['muons'], 0.4)
       - delta_r_mask(events.Jet, objects['taus'], 0.4)
   met:
     field: select_met
@@ -132,8 +125,8 @@ corrections:
     genWeight: true
     pileupWeight: true
     l1prefiringWeight: true
-    lhepdfWeight: false
-    lhescaleWeight: false
+    lhepdfWeight: true
+    lhescaleWeight: true
     partonshowerWeight: true
     topPtWeight: true
     topBoostWeight: false

@@ -3,6 +3,7 @@ datasets:
     - electron
   mc:
     - dy_inclusive
+    - wjets_ht
     - singletop
     - tt
     - diboson
@@ -11,7 +12,7 @@ object_selection:
     field: select_qcd_tf_electrons
     cuts:
       - events.Electron.pt > 30
-      - np.abs(events.Electron.eta) < 2.4
+      - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
   muons:
     field: events.Muon
     cuts:
@@ -42,14 +43,14 @@ object_selection:
       - delta_r_mask(events.Jet, objects['electrons'], 0.4)
       - delta_r_mask(events.Jet, objects['muons'], 0.4)
       - delta_r_mask(events.Jet, objects['taus'], 0.4)
-  bjets:
+  lightjets:
     field: events.Jet
     cuts:
       - events.Jet.pt > 20
       - np.abs(events.Jet.eta) < 2.4
       - working_points.jets_id(events, year, 'tightlepveto')
       - working_points.jets_pileup_id(events, 'tight', year)
-      - working_points.jets_btagging(events, 'medium', year)
+      - ~working_points.jets_btagging(events, 'loose', year)
       - delta_r_mask(events.Jet, objects['electrons'], 0.4)
       - delta_r_mask(events.Jet, objects['muons'], 0.4)
       - delta_r_mask(events.Jet, objects['taus'], 0.4)
@@ -73,8 +74,8 @@ event_selection:
     metfilters: get_metfilters_mask(events, year)
     met_50: objects['met'].pt > 50
     hemcleaning: get_hemcleaning_mask(events, year)
-    one_bjet: ak.num(objects["bjets"]) == 1
-    two_electrons: ak.num(objects['electrons']) == 2
+    two_electron: ak.num(objects['electrons']) == 2
+    one_dielectron: ak.num(objects['dielectrons']) == 1
     muon_veto: ak.num(objects['muons']) == 0
     tau_veto: ak.num(objects['taus']) == 0
     subleading_tight_dielectron: ak.sum(objects['dielectrons'].l2.is_tight, axis=1) == 1
@@ -88,8 +89,8 @@ event_selection:
       - metfilters
       - met_50
       - hemcleaning
-      - one_bjet
-      - two_electrons
+      - two_electron
+      - one_dielectron
       - muon_veto
       - tau_veto
       - subleading_tight_dielectron
@@ -101,15 +102,14 @@ event_selection:
       - metfilters
       - met_50
       - hemcleaning
-      - one_bjet
-      - two_electrons
+      - two_electron
+      - one_dielectron
       - muon_veto
       - tau_veto
       - subleading_not_tight_dielectron
 corrections:
   objects:
     - jets
-    - jets_veto
     - muons
     - taus
     - met
@@ -124,13 +124,15 @@ corrections:
     topBoostWeight: false
     pujetid: 
       - id: tight
-    btagging: false
     muon:
-      - id: false
-      - iso: false
+      - id: tight
+      - iso: tight
       - reco: true
-      - trigger: false
-    electron: false
+      - trigger: true
+    electron:
+      - id: wp90iso
+      - reco: true
+      - trigger: true
     tau: false
 histogram_config:
   flow: true
@@ -166,13 +168,6 @@ histogram_config:
       stop: 3.14159
       label: $\phi(e_1)$
       expression: objects['dielectrons'].l1.phi
-    leading_electron_tightid_wp:
-      type: Regular
-      bins: 2
-      start: 0
-      stop: 2
-      label: $e_1$ Pass Tight Selection
-      expression: objects['dielectrons'].l1.is_tight
     subleading_electron_pt:
       type: Variable
       edges:
@@ -222,7 +217,7 @@ histogram_config:
         - 500
       label: $p_T^{miss}$ [GeV]
       expression: objects['met'].pt
-    electron_met_mass:
+    electron_met_mass_leading:
       type: Variable
       edges:
         - 40
@@ -235,8 +230,23 @@ histogram_config:
         - 300
         - 500
         - 800
-      label: $m_T(e, p_T^{\text{miss}})$ [GeV]
+      label: $m_T(e_1, p_T^{\text{miss}})$ [GeV]
       expression: np.sqrt(2 * objects['dielectrons'].l1.pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['dielectrons'].l1.delta_phi(objects['met']))))
+    electron_met_mass_subleading:
+      type: Variable
+      edges:
+        - 40
+        - 75
+        - 100
+        - 125
+        - 150
+        - 175
+        - 200
+        - 300
+        - 500
+        - 800
+      label: $m_T(e_2, p_T^{\text{miss}})$ [GeV]
+      expression: np.sqrt(2 * objects['dielectrons'].l2.pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['dielectrons'].l2.delta_phi(objects['met']))))
   layout:
     multiplicity:
       - jet_multiplicity

@@ -3,6 +3,7 @@ datasets:
     - electron
   mc:
     - dy_inclusive
+    - wjets_ht
     - singletop
     - tt
     - diboson
@@ -11,7 +12,7 @@ object_selection:
     field: select_qcd_tf_electrons
     cuts:
       - events.Electron.pt > 30
-      - np.abs(events.Muon.eta) < 2.4
+      - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
   muons:
     field: events.Muon
     cuts:
@@ -42,14 +43,14 @@ object_selection:
       - delta_r_mask(events.Jet, objects['electrons'], 0.4)
       - delta_r_mask(events.Jet, objects['muons'], 0.4)
       - delta_r_mask(events.Jet, objects['taus'], 0.4)
-  bjets:
+  lightjets:
     field: events.Jet
     cuts:
       - events.Jet.pt > 20
       - np.abs(events.Jet.eta) < 2.4
       - working_points.jets_id(events, year, 'tightlepveto')
       - working_points.jets_pileup_id(events, 'tight', year)
-      - working_points.jets_btagging(events, 'medium', year)
+      - ~working_points.jets_btagging(events, 'loose', year)
       - delta_r_mask(events.Jet, objects['electrons'], 0.4)
       - delta_r_mask(events.Jet, objects['muons'], 0.4)
       - delta_r_mask(events.Jet, objects['taus'], 0.4)
@@ -58,7 +59,7 @@ object_selection:
   dielectrons:
     field: select_dielectrons_qcd
     cuts:
-      - objects['dielectrons'].l1.is_tight & objects['dielectrons'].l1.is_matched
+      - objects['dielectrons'].l1.is_loose_not_tight & objects['dielectrons'].l1.is_matched
       - (objects['dielectrons'].p4.mass < 60.0) | (objects['dielectrons'].p4.mass > 120.0)
       - np.sqrt(2 * objects['dielectrons'].l1.pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['dielectrons'].l1.delta_phi(objects['met'])))) > 60
 event_selection:
@@ -73,15 +74,27 @@ event_selection:
     metfilters: get_metfilters_mask(events, year)
     met_50: objects['met'].pt > 50
     hemcleaning: get_hemcleaning_mask(events, year)
-    one_bjet: ak.num(objects["bjets"]) == 1
-    two_electrons: ak.num(objects['electrons']) == 2
+    two_electron: ak.num(objects['electrons']) == 2
+    one_dielectron: ak.num(objects['dielectrons']) == 1
     muon_veto: ak.num(objects['muons']) == 0
     tau_veto: ak.num(objects['taus']) == 0
-    two_tight_dielectron: (ak.sum(objects['dielectrons'].l1.is_tight, axis=1) == 1) & (ak.sum(objects['dielectrons'].l2.is_tight, axis=1) == 1)
-    one_loose_one_tight_dielectron: ( (ak.sum(objects['dielectrons'].l1.is_loose, axis=1) == 1) & (ak.sum(objects['dielectrons'].l2.is_tight, axis=1) == 1) ) | ( (ak.sum(objects['dielectrons'].l1.is_tight, axis=1) == 1) & (ak.sum(objects['dielectrons'].l2.is_loose, axis=1) == 1) )
-    one_tight_one_loose_not_tight_dielectron: ( (ak.sum(objects['dielectrons'].l1.is_tight, axis=1) == 1) & (ak.sum(objects['dielectrons'].l2.is_loose_not_tight, axis=1) == 1) ) | ( (ak.sum(objects['dielectrons'].l1.is_loose_not_tight, axis=1) == 1) & (ak.sum(objects['dielectrons'].l2.is_tight, axis=1) == 1) )
+    subleading_tight_dielectron: ak.sum(objects['dielectrons'].l2.is_tight, axis=1) == 1
+    subleading_not_tight_dielectron: ak.sum(objects['dielectrons'].l2.is_not_tight, axis=1) == 1
   categories:
-    2T:
+    1LnT1T:
+      - goodvertex
+      - lumi
+      - trigger
+      - trigger_match
+      - metfilters
+      - met_50
+      - hemcleaning
+      - two_electron
+      - 
+      - muon_veto
+      - tau_veto
+      - subleading_tight_dielectron
+    1LnT1nT:
       - goodvertex
       - lumi
       - trigger
@@ -93,33 +106,7 @@ event_selection:
       - two_electrons
       - muon_veto
       - tau_veto
-      - two_tight_dielectron
-    1L1T:
-      - goodvertex
-      - lumi
-      - trigger
-      - trigger_match
-      - metfilters
-      - met_50
-      - hemcleaning
-      - one_bjet
-      - two_electrons
-      - muon_veto
-      - tau_veto
-      - one_loose_one_tight_dielectron
-    1T1LnT:
-      - goodvertex
-      - lumi
-      - trigger
-      - trigger_match
-      - metfilters
-      - met_50
-      - hemcleaning
-      - one_bjet
-      - two_electrons
-      - muon_veto
-      - tau_veto
-      - one_tight_one_loose_not_tight_dielectron
+      - subleading_not_tight_dielectron
 corrections:
   objects:
     - jets
@@ -135,14 +122,10 @@ corrections:
     lhepdfWeight: false
     lhescaleWeight: false
     partonshowerWeight: true
-    MuBoostWeight: false
+    topBoostWeight: false
     pujetid: 
       - id: tight
-    btagging: 
-      - id: medium
-      - bc: true
-      - light: true
-      - full_run: false
+    btagging: false
     muon:
       - id: false
       - iso: false
