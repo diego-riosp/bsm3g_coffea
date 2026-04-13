@@ -130,7 +130,7 @@ corrections:
       - reco: true
       - trigger: true
     electron:
-      - id: wp80iso
+      - id: wp90iso
       - reco: true
       - trigger: true
     tau: false
