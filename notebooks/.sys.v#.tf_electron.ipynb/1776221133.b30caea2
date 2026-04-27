@@ -28,7 +28,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 2,
    "id": "953b73da-0171-4c3a-9649-eff7d30ddf7e",
    "metadata": {},
    "outputs": [],
@@ -51,7 +51,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": 3,
    "id": "bf23db11-1549-4403-b054-4badd4b121f0",
    "metadata": {},
    "outputs": [],
@@ -80,17 +80,29 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": 4,
    "id": "3f6984d4-bcd7-44cd-8e5c-a3a98aa5ea5b",
    "metadata": {},
-   "outputs": [],
+   "outputs": [
+    {
+     "ename": "KeyError",
+     "evalue": "'transverse_mass'",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+      "\u001b[0;32m/tmp/ipykernel_661/1771782269.py\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0myear\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m\"2017\"\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      2\u001b[0m \u001b[0mout\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mload\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34mf\"outputs/qcd_tf_ele/{year}/{year}_processed_histograms.coffea\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 3\u001b[0;31m \u001b[0mdata\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mout\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"Data\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"transverse_mass\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m{\u001b[0m\u001b[0;34m\"variation\"\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0;34m\"nominal\"\u001b[0m\u001b[0;34m}\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      4\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m mc = accumulate([\n",
+      "\u001b[0;31mKeyError\u001b[0m: 'transverse_mass'"
+     ]
+    }
+   ],
    "source": [
     "year = \"2017\"\n",
     "out = load(f\"outputs/qcd_tf_ele/{year}/{year}_processed_histograms.coffea\")\n",
     "data = out[\"Data\"][\"transverse_mass\"][{\"variation\": \"nominal\"}]\n",
     "\n",
     "mc = accumulate([\n",
-    "    out[\"DYJetsToLL\"][\"transverse_mass\"][{\"variation\": \"nominal\"}],\n",
+    "    out[\"DYJetsToLL\"][\"leading_electron\"][{\"variation\": \"nominal\"}],\n",
     "    out[\"SingleTop\"][\"transverse_mass\"][{\"variation\": \"nominal\"}],\n",
     "    out[\"tt\"][\"transverse_mass\"][{\"variation\": \"nominal\"}],\n",
     "    out[\"Diboson\"][\"transverse_mass\"][{\"variation\": \"nominal\"}]\n",
@@ -158,7 +170,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 7,
+   "execution_count": null,
    "id": "e3168ccc-903e-4934-b1cb-d41092702bf3",
    "metadata": {},
    "outputs": [],
@@ -178,11 +190,26 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 12,
    "id": "746e30c3-51cb-4d52-aeb0-f59d28c28cc4",
    "metadata": {},
-   "outputs": [],
-   "source": []
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([ 14.6367011 ,   1.85936556,  19.2497854 ,  33.37400059,\n",
+       "         4.20652669,   3.28027207, -10.27485648,  -6.2690465 ,\n",
+       "         2.70346446])"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "histo[{\"category\": \"1LnT1T\"}].project(variable).values()"
+   ]
   },
   {
    "cell_type": "code",

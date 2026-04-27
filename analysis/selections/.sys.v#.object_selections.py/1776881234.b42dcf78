@@ -135,7 +135,7 @@ class ObjectSelector:
         from analysis.selections.trigger import trigger_match_mask
         qcd_tf_electrons = self.events.Electron
         
-        qcd_tf_electrons["is_loose"] = working_points.electrons_id(self.events, 'wpLiso') & working_points.electrons_iso(self.events, 'loose')
+        qcd_tf_electrons["is_loose"] = working_points.electrons_id(self.events, 'wpLiso') & working_points.electrons_iso(self.events, 'loose') 
         qcd_tf_electrons["is_tight"] = working_points.electrons_id(self.events, 'wp80iso') & working_points.electrons_iso(self.events, 'tight')
         qcd_tf_electrons["is_not_tight"] = ~(working_points.electrons_id(self.events, 'wp80iso') & working_points.electrons_iso(self.events, 'tight'))
         qcd_tf_electrons["is_loose_not_tight"] = working_points.electrons_id(self.events, 'wpLiso') & working_points.electrons_iso(self.events, 'loose') & ~(working_points.electrons_id(self.events, 'wp80iso') & working_points.electrons_iso(self.events, 'tight'))

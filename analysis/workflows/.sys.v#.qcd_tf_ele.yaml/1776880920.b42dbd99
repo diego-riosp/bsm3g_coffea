@@ -131,7 +131,6 @@ corrections:
       - trigger: true
     electron:
       - id: wp80iso
-      - iso: tight
       - reco: true
       - trigger: true
     tau: false

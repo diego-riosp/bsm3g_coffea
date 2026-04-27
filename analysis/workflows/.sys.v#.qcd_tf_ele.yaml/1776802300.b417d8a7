@@ -131,7 +131,6 @@ corrections:
       - trigger: true
     electron:
       - id: wp80iso
-      - iso: tight
       - reco: true
       - trigger: true
     tau: false
@@ -268,18 +267,16 @@ histogram_config:
     multiplicity:
       - jet_multiplicity
     leading_electron:
+      - electron_met_mass_leading
+      - met_pt
+    leading_electron_barrel:
+      - leading_is_barrel
       - leading_electron_pt
       - leading_electron_eta
-      - leading_electron_phi
-      - electron_met_mass_leading
-      - leading_electron_istight
-      - leading_is_barrel
-      - met_pt
     subleading_electron:
+      - electron_met_mass_subleading
+      - met_pt
+    subleading_electron_barrel:
+      - subleading_is_barrel
       - subleading_electron_pt
       - subleading_electron_eta
-      - subleading_electron_phi
-      - electron_met_mass_subleading
-      - subleading_electron_istight
-      - subleading_is_barrel
-      - met_pt
