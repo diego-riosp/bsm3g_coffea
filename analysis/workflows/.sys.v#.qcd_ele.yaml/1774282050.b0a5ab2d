@@ -7,16 +7,19 @@ datasets:
     - tt
     - wjets_ht
     - diboson
+    - qcd
 object_selection:
   electrons:
-    field: select_qcd_tf_electrons
+    field: events.Electron
     cuts:
-      - events.Electron.pt > 30
+      - events.Electron.pt > 55
       - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
+      - working_points.electrons_id(events, 'wpLiso')
+      - ~working_points.electrons_id(events, 'wp80iso')
   muons:
     field: events.Muon
     cuts:
-      - events.Muon.pt > 30
+      - events.Muon.pt > 35
       - np.abs(events.Muon.eta) < 2.4
       - working_points.muons_id(events, 'tight')
       - working_points.muons_iso(events, 'tight')
@@ -69,7 +72,7 @@ event_selection:
     met_50: objects['met'].pt > 50
     hemcleaning: get_hemcleaning_mask(events, year)
     exactly_one_bjet: ak.num(objects['bjets']) == 1
-    exactly_one_electron: ak.sum(objects['electrons'].is_loose_not_tight, axis=1) == 1
+    exactly_one_electron: ak.num(objects['electrons']) == 1
     muon_veto: ak.num(objects['muons']) == 0
     tau_veto: ak.num(objects['taus']) == 0
   categories:
@@ -88,6 +91,7 @@ event_selection:
 corrections:
   objects:
     - jets
+    - jets_veto
     - muons
     - taus
     - met
@@ -103,11 +107,11 @@ corrections:
     topBoostWeight: false
     pujetid: 
       - id: tight
-    btagging: false
-      # - id: medium
-      # - bc: true
-      # - light: true
-      # - full_run: false
+    btagging: 
+      - id: medium
+      - bc: true
+      - light: true
+      - full_run: false
     electron:
       - id: false
       - reco: true
@@ -183,7 +187,7 @@ histogram_config:
       stop: 3.14159
       label: $\phi(\text{bjet})$
       expression: objects['bjets'].phi
-    met_pt:
+    met:
       type: Variable
       edges:
         - 50
@@ -226,16 +230,16 @@ histogram_config:
       label: vertex multiplicity
       expression: events.PV.npvsGood
   layout:
-    multiplicity:
+    jet_multiplicity:
       - jet_multiplicity
-    transverse_mass:
+    mass:
       - electron_met_mass
-      - met_pt
-    electron:
+      - met
+    electrons:
       - electron_pt
       - electron_eta
       - electron_phi
-    bjet:
+    bjets:
       - bjet_pt
       - bjet_eta
       - bjet_phi

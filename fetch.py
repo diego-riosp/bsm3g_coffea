@@ -63,9 +63,14 @@ if __name__ == "__main__":
     # otherwise dask/distributed versions can be mixed
     samples_str = " ".join(args.samples) if args.samples else ""
     cmd = (
-        f"singularity exec --env PYTHONNOUSERSITE=1 -B /afs -B /cvmfs {args.image} "
+        f"singularity exec "
+        f"--env PYTHONNOUSERSITE=1 "
+        f"-B /afs "
+        f"-B /cvmfs "
+        f"-B coffea_patch/rucio_utils.py:/usr/local/lib/python3.10/site-packages/coffea/dataset_tools/rucio_utils.py "
+        f"{args.image} "
         f"python3 analysis/filesets/build_filesets.py --year {args.year} --samples {samples_str}"
-    )
+        )
     subprocess.run(cmd, shell=True)
 
     # add signal samples

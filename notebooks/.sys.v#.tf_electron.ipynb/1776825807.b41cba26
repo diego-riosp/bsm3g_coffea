@@ -1,0 +1,282 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "693b49e6-e752-4e62-a9b5-dfc6e3a006be",
+   "metadata": {},
+   "source": [
+    "## One Tight One Loose"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "ed03ad82-50c6-443e-901d-f6ddbcb3080b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/eos/home-i00/d/driosper/bsm3g_coffea\n"
+     ]
+    }
+   ],
+   "source": [
+    "%cd .."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "953b73da-0171-4c3a-9649-eff7d30ddf7e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from coffea.util import load\n",
+    "import numpy as np\n",
+    "import mplhep as hep\n",
+    "from matplotlib.offsetbox import AnchoredText\n",
+    "import matplotlib.pyplot as plt\n",
+    "from coffea.processor import accumulate\n",
+    "from hist.intervals import poisson_interval\n",
+    "from pathlib import Path\n",
+    "import yaml\n",
+    "from analysis.filesets.utils import get_process_maps\n",
+    "from analysis.workflows.config import WorkflowConfigBuilder\n",
+    "import json\n",
+    "year = \"2017\"\n",
+    "out = load(f\"outputs/qcd_tf_ele/{year}/{year}_processed_histograms.coffea\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "bf23db11-1549-4403-b054-4badd4b121f0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "config_builder = WorkflowConfigBuilder(workflow=\"qcd_tf_ele\")\n",
+    "workflow_config = config_builder.build_workflow_config()\n",
+    "postprocess_dir = Path.cwd() / \"analysis\" / \"postprocess\"\n",
+    "style_file = postprocess_dir / \"style.yaml\"\n",
+    "luminosity_file = postprocess_dir / \"luminosity.yaml\"\n",
+    "color_map_file = postprocess_dir / \"color_map.yaml\"\n",
+    "\n",
+    "with open(style_file, \"r\") as f:\n",
+    "    style = yaml.safe_load(f)\n",
+    "with open(f\"{Path.cwd()}/analysis/postprocess/luminosity.yaml\", \"r\") as f:\n",
+    "    luminosities = yaml.safe_load(f)\n",
+    "\n",
+    "# set processes -> color and processes -> sample name maps\n",
+    "processes, process_name_map, _ = get_process_maps(workflow_config, year)\n",
+    "with open(color_map_file, \"r\") as f:\n",
+    "    color_map = yaml.safe_load(f)\n",
+    "color_map = {p: c for p, c in color_map.items() if p in processes}\n",
+    "\n",
+    "hep.style.use(hep.style.CMS)\n",
+    "plt.rcParams.update(style[\"rcParams\"])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "3f6984d4-bcd7-44cd-8e5c-a3a98aa5ea5b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[ 16.8675507   27.09966641  85.48063955 120.18303216  82.08937079\n",
+      "  30.86395263  51.93754876  66.07862825  41.06995999]\n"
+     ]
+    }
+   ],
+   "source": [
+    "year = \"2017\"\n",
+    "out = load(f\"outputs/qcd_tf_ele/{year}/{year}_processed_histograms.coffea\")\n",
+    "data = out[\"Data\"][\"leading_electron\"][{\"variation\": \"nominal\"}]\n",
+    "\n",
+    "mc = accumulate([\n",
+    "    out[\"DYJetsToLL\"][\"leading_electron\"][{\"variation\": \"nominal\"}],\n",
+    "    out[\"SingleTop\"][\"leading_electron\"][{\"variation\": \"nominal\"}],\n",
+    "    out[\"tt\"][\"leading_electron\"][{\"variation\": \"nominal\"}],\n",
+    "    out[\"Diboson\"][\"leading_electron\"][{\"variation\": \"nominal\"}]\n",
+    "])\n",
+    "\n",
+    "histo = data + (mc * -1)\n",
+    "\n",
+    "variable = \"electron_met_mass_leading\"\n",
+    "\n",
+    "h_loose = histo[{\"category\": \"1LnT1nT\"}].project(variable)\n",
+    "h_tight = histo[{\"category\": \"1LnT1T\"}].project(variable)\n",
+    "\n",
+    "num = h_tight.values()\n",
+    "den = h_loose.values()\n",
+    "\n",
+    "var_num = h_tight.variances()\n",
+    "var_den = h_loose.variances()\n",
+    "\n",
+    "tf = np.where(\n",
+    "    (num > 0) & (den > 0), \n",
+    "    num / (den + 1e-32),\n",
+    "    1\n",
+    ")\n",
+    "\n",
+    "tf_var = np.zeros_like(tf)\n",
+    "\n",
+    "mask = den != 0\n",
+    "\n",
+    "tf_var[mask] = (\n",
+    "    (1.0 / den[mask])**2 * var_num[mask]\n",
+    "    +\n",
+    "    (num[mask] / den[mask]**2)**2 * var_den[mask]\n",
+    ")\n",
+    "\n",
+    "h_tf = h_loose.copy()\n",
+    "h_tf.values()[:] = tf\n",
+    "h_tf.variances()[:] = tf_var\n",
+    "\n",
+    "h_loose_not_tight = histo[{\"category\": \"1LnT1nT\"}].project(variable)\n",
+    "h_qcd = h_loose_not_tight * tf\n",
+    "print(histo[{\"category\": \"1LnT1T\"}].project(variable).values())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "eba18137-33d4-4b81-b57e-b6e25917922b",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 504x432 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "def plot_cms_tf(hist_histogram):\n",
+    "    hep.style.use(hep.style.CMS)\n",
+    "\n",
+    "    plt.rcParams.update({\n",
+    "        \"font.size\": 14,\n",
+    "        \"axes.titlesize\": 14,\n",
+    "        \"axes.labelsize\": 15,\n",
+    "        \"xtick.labelsize\": 10,\n",
+    "        \"ytick.labelsize\": 10,\n",
+    "        \"lines.markersize\": 2,\n",
+    "        \"legend.fontsize\": 10,\n",
+    "    })\n",
+    "\n",
+    "    fig, ax = plt.subplots(figsize=(7, 6))\n",
+    "\n",
+    "    edges = hist_histogram.axes[0].edges\n",
+    "    values = hist_histogram.values()\n",
+    "    variances = hist_histogram.variances()\n",
+    "\n",
+    "    centers = 0.5 * (edges[:-1] + edges[1:])\n",
+    "    widths = np.diff(edges)\n",
+    "    errors = np.sqrt(variances)\n",
+    "\n",
+    "    ax.bar(\n",
+    "        centers,\n",
+    "        values,\n",
+    "        width=widths,\n",
+    "        align=\"center\",\n",
+    "        alpha=0.2,\n",
+    "        color=\"green\",\n",
+    "        edgecolor=None\n",
+    "    )\n",
+    "\n",
+    "    for i in range(len(values)):\n",
+    "        ax.hlines(\n",
+    "            values[i],\n",
+    "            edges[i],\n",
+    "            edges[i+1],\n",
+    "            colors=\"black\",\n",
+    "            linewidth=1\n",
+    "        )\n",
+    "\n",
+    "    ax.errorbar(\n",
+    "        centers,\n",
+    "        values,\n",
+    "        yerr=errors,\n",
+    "        fmt='o',\n",
+    "        color='black',\n",
+    "        markersize=5,\n",
+    "        capsize=0,\n",
+    "        linewidth=1\n",
+    "    )\n",
+    "\n",
+    "    ax.set_ylabel(\"TF\")\n",
+    "    ax.set_xlabel(r\"$m_T(e_1, p_T^{miss})$ [GeV]\")\n",
+    "\n",
+    "    ax.set_ylim(0, np.max(values) * 1.2)\n",
+    "    ax.set_xlim(edges[0], edges[-1])\n",
+    "\n",
+    "    ax.tick_params(direction=\"in\", top=True, right=True)\n",
+    "\n",
+    "    hep.cms.lumitext(\"41.47 fb$^{-1}$ (2017, 13 TeV)\", fontsize=12, ax=ax)\n",
+    "    hep.cms.text(\"Preliminary\", loc=0, ax=ax)\n",
+    "\n",
+    "    plt.tight_layout()\n",
+    "    plt.savefig(\"qcd_tf.png\")\n",
+    "    plt.show()\n",
+    "def plot_cms_histogram(hist_histogram, variable):\n",
+    "    import mplhep as hep\n",
+    "    hep.style.use(hep.style.CMS)\n",
+    "    plt.rcParams.update(\n",
+    "        {\n",
+    "            \"font.size\": 14,\n",
+    "            \"axes.titlesize\": 14,\n",
+    "            \"axes.labelsize\": 15,\n",
+    "            \"xtick.labelsize\": 10,\n",
+    "            \"ytick.labelsize\": 10,\n",
+    "            \"lines.markersize\": 4,\n",
+    "            \"legend.fontsize\": 10,\n",
+    "        }\n",
+    "    )\n",
+    "    fig, ax = plt.subplots(figsize=(6, 5))\n",
+    "    hist_histogram.project(variable).plot1d(ax=ax)\n",
+    "    ax.set(ylabel=\"QCD Events\")\n",
+    "    edges = hist_histogram.axes[0].edges\n",
+    "    ax.set_xlim(edges[0], edges[-1])\n",
+    "    hep.cms.lumitext(\"41.47 fb$^{-1}$ (2017, 13 TeV)\", fontsize=9, ax=ax)\n",
+    "    hep.cms.text(\"Preliminary\", loc=0, ax=ax)\n",
+    "    plt.savefig(\"qcd.png\")\n",
+    "    \n",
+    "plot_cms_histogram(h_qcd, variable)\n",
+    "plot_cms_tf(h_tf)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -267,16 +267,15 @@ histogram_config:
       - leading_electron_pt
       - leading_electron_eta
       - leading_electron_phi
+      - electron_met_mass_leading
       - leading_electron_istight
       - leading_is_barrel
+      - met_pt
     subleading_electron:
       - subleading_electron_pt
       - subleading_electron_eta
       - subleading_electron_phi
+      - electron_met_mass_subleading
       - subleading_electron_istight
       - subleading_is_barrel
-    transverse_mass:
-      - electron_met_mass_leading
-      - electron_met_mass_subleading
-    met:
       - met_pt
