@@ -106,10 +106,10 @@ corrections:
     pujetid: 
       - id: tight
     btagging: false
-      # - id: medium
-      # - bc: true
-      # - light: true
-      # - full_run: false
+      - id: medium
+      - bc: true
+      - light: true
+      - full_run: false
     electron: false
     muon: false
     tau: false
