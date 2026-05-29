@@ -105,7 +105,7 @@ corrections:
     topBoostWeight: false
     pujetid: 
       - id: tight
-    btagging:
+    btagging: false
       - id: medium
       - bc: true
       - light: true

@@ -1,28 +1,33 @@
 datasets:
   data: 
-    - electron
+    - muon
   mc:
     - dy_inclusive
+    - wjets_ht
     - singletop
     - tt
-    - wjets_ht
     - diboson
 object_selection:
+  muons:
+    field: select_qcd_tf_muons
+    cuts:
+      - events.Muon.pt > 30
+      - np.abs(events.Muon.eta) < 2.4
   electrons:
     field: events.Electron
     cuts:
-      - events.Electron.pt > 55
-      - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) < 1.44) | (np.abs(events.Electron.eta) > 1.57))
-      - working_points.electrons_id(events, 'wpLiso')
-      - ~working_points.electrons_id(events, 'wp80iso')
-  muons:
-    field: events.Muon
-    cuts:
-      - events.Muon.pt > 35
-      - np.abs(events.Muon.eta) < 2.4
-      - working_points.muons_id(events, 'tight')
-      - working_points.muons_iso(events, 'tight')
-      - delta_r_mask(events.Muon, objects['electrons'], 0.4)
+      - events.Electron.pt > 30
+      - (np.abs(events.Electron.eta) < 2.4) & ((np.abs(events.Electron.eta) <
+        1.44) | (np.abs(events.Electron.eta) > 1.57))
+      - delta_r_mask(events.Electron, objects['muons'], 0.4)
+    add_cut:
+      is_loose:
+        - working_points.electrons_id(events, 'wpLiso')
+      is_tight:
+        - working_points.electrons_id(events, 'wp80iso')
+      is_loose_not_tight:
+        - working_points.electrons_id(events, 'wpLiso')
+        - ~working_points.electrons_id(events, 'wp80iso')
   taus:
     field: events.Tau
     cuts:
@@ -45,14 +50,14 @@ object_selection:
       - delta_r_mask(events.Jet, objects['electrons'], 0.4)
       - delta_r_mask(events.Jet, objects['muons'], 0.4)
       - delta_r_mask(events.Jet, objects['taus'], 0.4)
-  bjets:
+  lightjets:
     field: events.Jet
     cuts:
       - events.Jet.pt > 20
       - np.abs(events.Jet.eta) < 2.4
       - working_points.jets_id(events, year, 'tightlepveto')
       - working_points.jets_pileup_id(events, 'tight', year)
-      - working_points.jets_btagging(events, 'medium', year)
+      - ~working_points.jets_btagging(events, 'loose', year)
       - delta_r_mask(events.Jet, objects['electrons'], 0.4)
       - delta_r_mask(events.Jet, objects['muons'], 0.4)
       - delta_r_mask(events.Jet, objects['taus'], 0.4)
@@ -60,33 +65,63 @@ object_selection:
     field: select_met
 event_selection:
   hlt_paths:
-    electron:
-      - SingleEle
+    muon:
+      - SingleMu
   selections:
     goodvertex: events.PV.npvsGood > 0
     lumi: get_lumi_mask(events, year)
     trigger: get_trigger_mask(events, hlt_paths, dataset, year)
-    trigger_match: get_trigger_match_mask(events, hlt_paths, year, events.Electron)
+    trigger_match: get_trigger_match_mask(events, hlt_paths, year, events.Muon)
     metfilters: get_metfilters_mask(events, year)
     met_50: objects['met'].pt > 50
     hemcleaning: get_hemcleaning_mask(events, year)
-    exactly_one_bjet: ak.num(objects['bjets']) == 1
-    exactly_one_electron: ak.num(objects['electrons']) == 1
-    muon_veto: ak.num(objects['muons']) == 0
+    one_muon: ak.num(objects['muons']) == 1
+    one_electron: ak.num(objects['electrons']) == 1
     tau_veto: ak.num(objects['taus']) == 0
+    one_tight_muon: ak.sum(objects['muons'].is_matched_tight, axis=1) == 1
+    one_tight_electron: ak.sum(objects['electrons'].is_tight, axis = 1) == 1
+    one_loose_electron: ak.sum(objects['electrons'].is_loose, axis = 1) == 1
+    one_loose_not_tight_electron: ak.sum(objects['electrons'].is_loose_not_tight, axis = 1) == 1
   categories:
-    base:
+    2T:
       - goodvertex
       - lumi
       - trigger
       - trigger_match
       - metfilters
-      - hemcleaning
       - met_50
-      - exactly_one_bjet
-      - exactly_one_electron
+      - hemcleaning
       - tau_veto
-      - muon_veto
+      - one_muon
+      - one_tight_muon
+      - one_electron
+      - one_tight_electron
+    1T1L:
+      - goodvertex
+      - lumi
+      - trigger
+      - trigger_match
+      - metfilters
+      - met_50
+      - hemcleaning
+      - tau_veto
+      - one_muon
+      - one_tight_muon
+      - one_electron
+      - one_loose_electron
+    1T1LnT:
+      - goodvertex
+      - lumi
+      - trigger
+      - trigger_match
+      - metfilters
+      - met_50
+      - hemcleaning
+      - tau_veto
+      - one_muon
+      - one_tight_muon
+      - one_electron
+      - one_loose_not_tight_electron
 corrections:
   objects:
     - jets
@@ -101,34 +136,61 @@ corrections:
     lhepdfWeight: false
     lhescaleWeight: false
     partonshowerWeight: true
-    topPtWeight: true
     topBoostWeight: false
     pujetid: 
       - id: tight
-    btagging:
-      - id: medium
-      - bc: true
-      - light: true
-      - full_run: false
+    muon:
+      - id: tight
+      - iso: tight
+      - reco: true
+      - trigger: true
     electron: false
-    muon: false
     tau: false
 histogram_config:
   flow: true
   add_weight: true
   add_syst_axis: true
   axes:
-    electron_pt:
+    muon_pt:
       type: Variable
       edges:
-        - 30
-        - 60
-        - 90
-        - 120
-        - 150
+        - 50
+        - 80
+        - 110
+        - 140
         - 180
         - 210
         - 240
+        - 270
+        - 300
+        - 500
+      label: $p_T(\mu)$ [GeV]
+      expression: objects['muons'].pt
+    muon_eta:
+      type: Regular
+      bins: 50
+      start: -2.4
+      stop: 2.4
+      label: $\eta(\mu)$
+      expression: objects['muons'].eta
+    muon_phi:
+      type: Regular
+      bins: 50
+      start: -3.14159
+      stop: 3.14159
+      label: $\phi(\mu)$
+      expression: objects['muons'].phi
+    electron_pt:
+      type: Variable
+      edges:
+        - 50
+        - 80
+        - 110
+        - 140
+        - 180
+        - 210
+        - 240
+        - 270
         - 300
         - 500
       label: $p_T(e)$ [GeV]
@@ -153,35 +215,6 @@ histogram_config:
       stop: 14
       label: Jet multiplicity
       expression: ak.num(objects['jets'])
-    bjet_pt:
-      type: Variable
-      edges:
-        - 20
-        - 60
-        - 90
-        - 120
-        - 150
-        - 180
-        - 210
-        - 240
-        - 300
-        - 500
-      label: $p_T(\text{bjet})$ [GeV]
-      expression: objects['bjets'].pt
-    bjet_eta:
-      type: Regular
-      bins: 50
-      start: -2.4
-      stop: 2.4
-      label: $\eta(\text{bjet})$
-      expression: objects['bjets'].eta
-    bjet_phi:
-      type: Regular
-      bins: 50
-      start: -3.14159
-      stop: 3.14159
-      label: $\phi(\text{bjet})$
-      expression: objects['bjets'].phi
     met_pt:
       type: Variable
       edges:
@@ -196,13 +229,6 @@ histogram_config:
         - 500
       label: $p_T^{miss}$ [GeV]
       expression: objects['met'].pt
-    met_phi:
-      type: Regular
-      bins: 50
-      start: -3.14159
-      stop: 3.14159
-      label: $\phi(p_T^{miss})$ [GeV]
-      expression: objects['met'].phi
     electron_met_mass:
       type: Variable
       edges:
@@ -216,27 +242,35 @@ histogram_config:
         - 300
         - 500
         - 800
-      label: $m_T(e, p_T^{miss})$ [GeV]
-      expression: np.sqrt(2.0 * objects['electrons'].pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['electrons'].delta_phi(objects['met']))))
-    npvs:
-      type: Integer
-      start: 0
-      stop: 100
-      label: vertex multiplicity
-      expression: events.PV.npvsGood
+      label: $m_T(e, p_T^{\text{miss}})$ [GeV]
+      expression: np.sqrt(2 * objects['electrons'].pt * objects['met'].pt * (ak.ones_like(objects['met'].pt) - np.cos(objects['electrons'].delta_phi(objects['met']))))
+    muon_istight:
+      type: Boolean
+      label: Muon ID
+      expression: objects['muons'].is_tight
+    electron_istight:
+      type: Boolean
+      label: Electron ID
+      expression: objects['electrons'].is_tight
+    muon_is_barrel:
+      type: Boolean
+      label: is barrel
+      expression: objects['muons'].is_barrel
   layout:
     multiplicity:
       - jet_multiplicity
-    transverse_mass:
-      - electron_met_mass
-      - met_pt
+    muon:
+      - muon_pt
+      - muon_eta
+      - muon_phi
+      - muon_istight
+      - muon_is_barrel
     electron:
       - electron_pt
       - electron_eta
       - electron_phi
-    bjet:
-      - bjet_pt
-      - bjet_eta
-      - bjet_phi
-    vertex:
-      - npvs
+      - electron_istight
+    transverse_mass:
+      - electron_met_mass
+    met:
+      - met_pt

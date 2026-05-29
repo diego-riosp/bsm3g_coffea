@@ -1,7 +1,6 @@
 """Check job outputs, identify missing results, and optionally resubmit jobs or update input filesets based on xrootd site issues"""
 
 import yaml
-import signal
 import json
 import argparse
 import logging

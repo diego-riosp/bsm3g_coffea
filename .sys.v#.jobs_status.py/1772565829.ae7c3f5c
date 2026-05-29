@@ -1,7 +1,6 @@
 """Check job outputs, identify missing results, and optionally resubmit jobs or update input filesets based on xrootd site issues"""
 
 import yaml
-import signal
 import json
 import argparse
 import logging
@@ -273,21 +272,6 @@ def resubmit_jobs(job_dir, jobnum_missing, datasets_with_missing_jobs, workflow,
     for submit_file in to_resubmit:
         subprocess.run(["condor_submit", submit_file])
 
-def timeout_input(prompt, timeout=5, default="y"):
-    def handler(signum, frame):
-        raise TimeoutError
-
-    signal.signal(signal.SIGALRM, handler)
-    signal.alarm(timeout)
-
-    try:
-        answer = input(prompt)
-        signal.alarm(0)  # cancelar alarma
-        return answer
-    except TimeoutError:
-        print(f"\nNo response in {timeout}s, defaulting to '{default}'")
-        return default
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -330,12 +314,15 @@ if __name__ == "__main__":
     if jobnum_missing and datasets_with_missing_jobs:
         site_errs = analyze_xrootd_errors(error_file)
 
-        if site_errs and timeout_input("Update input filesets? (y/n): ", 5, "y").lower() in ["y", "yes"]:
+        if site_errs and input("Update input filesets? (y/n): ").lower() in [
+            "y",
+            "yes",
+        ]:
             update_input_filesets(
                 site_errs, args.year, fileset_dir, job_dir, datasets_with_missing_jobs
             )
 
-        if timeout_input("Update and resubmit jobs? (y/n): ", 5, "y").lower() in ["y", "yes"]:
+        if input("Update and resubmit jobs? (y/n): ").lower() in ["y", "yes"]:
             resubmit_jobs(
                 job_dir,
                 jobnum_missing,

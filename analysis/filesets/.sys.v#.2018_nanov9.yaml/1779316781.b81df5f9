@@ -513,46 +513,46 @@ signal_Wpb_eNu_M300:
   process: Wpb_eNu_M300
   key: Wpb_eNu_M300
   query: Wpb_eNu_M300/crendonh-RunIISummer20UL18_NanoAODv9_Wpb_eNu_M300-00000000000000000000000000000000/USER
-  xsec: 91.7
+  xsec: 1.0
 signal_Wpb_eNu_M400:
   era: MC
   process: Wpb_eNu_M400
   key: Wpb_eNu_M400
   query: Wpb_eNu_M400/crendonh-RunIISummer20UL18_NanoAODv9_Wpb_eNu_M400-00000000000000000000000000000000/USER
-  xsec: 30.2
+  xsec: 1.0
 signal_Wpb_eNu_M600:
   era: MC
   process: Wpb_eNu_M600
   key: Wpb_eNu_M600
   query: Wpb_eNu_M600/crendonh-RunIISummer20UL18_NanoAODv9_Wpb_eNu_M600-00000000000000000000000000000000/USER
-  xsec: 5.97
+  xsec: 1.0
 signal_Wpb_eNu_M750:
   era: MC
   process: Wpb_eNu_M750
   key: Wpb_eNu_M750
   query: Wpb_eNu_M750/crendonh-RunIISummer20UL18_NanoAODv9_Wpb_eNu_M750-00000000000000000000000000000000/USER
-  xsec: 2.32
+  xsec: 1.0
 signal_Wpb_eNu_M1000:
   era: MC
   process: Wpb_eNu_M1000
   key: Wpb_eNu_M1000
   query: Wpb_eNu_M1000/crendonh-RunIISummer20UL18_NanoAODv9_Wpb_eNu_M1000-00000000000000000000000000000000/USER
-  xsec: 0.646
+  xsec: 1.0
 signal_Wpb_eNu_M1500:
   era: MC
   process: Wpb_eNu_M1500
   key: Wpb_eNu_M1500
   query: Wpb_eNu_M1500/crendonh-RunIISummer20UL18_NanoAODv9_Wpb_eNu_M1500-00000000000000000000000000000000/USER
-  xsec: 0.0891
+  xsec: 1.0
 signal_Wpb_eNu_M2000:
   era: MC
   process: Wpb_eNu_M2000
   key: Wpb_eNu_M2000
   query: Wpb_eNu_M2000/crendonh-RunIISummer20UL18_NanoAODv9_Wpb_eNu_M2000-00000000000000000000000000000000/USER
-  xsec: 0.0182
+  xsec: 1.0
 signal_Wpb_eNu_M3000:
   era: MC
   process: Wpb_eNu_M3000
   key: Wpb_eNu_M3000
   query: Wpb_eNu_M3000/crendonh-RunIISummer20UL18_NanoAODv9_Wpb_eNu_M3000-00000000000000000000000000000000/USER
-  xsec: 0.00134
+  xsec: 1.0

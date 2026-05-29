@@ -627,10 +627,10 @@ signal_Wpb_eNu_M2000:
   process: Wpb_eNu_M2000
   key: Wpb_eNu_M2000
   query: Wpb_eNu_M2000/crendonh-RunIISummer20UL17_NanoAODv9_Wpb_eNu_M2000-00000000000000000000000000000000/USER
-  xsec: 0.0182
+  xsec: 1.0
 signal_Wpb_eNu_M3000:
   era: MC
   process: Wpb_eNu_M3000
   key: Wpb_eNu_M3000
   query: Wpb_eNu_M3000/crendonh-RunIISummer20UL17_NanoAODv9_Wpb_eNu_M3000-00000000000000000000000000000000/USER
-  xsec: 0.00134
+  xsec: 1.0
