@@ -11,6 +11,18 @@ from datetime import datetime, timedelta
 from analysis.utils import make_output_directory
 from analysis.filesets.xrootd_sites import xroot_to_site
 from analysis.filesets.utils import divide_list, modify_site_list, extract_xrootd_errors
+import sys
+import select
+
+def input_with_timeout(prompt, timeout=3, default='y'):
+    """Prompt the user for input. If no input is given within 'timeout' seconds, return 'default'."""
+    print(prompt, end='', flush=True)
+    ready, _, _ = select.select([sys.stdin], [], [], timeout)
+    if ready:
+        return sys.stdin.readline().strip()
+    else:
+        print(f"\n[No response within {timeout}s -> Defaulting to: '{default}']")
+        return default
 
 
 def parse_args():
@@ -314,15 +326,18 @@ if __name__ == "__main__":
     if jobnum_missing and datasets_with_missing_jobs:
         site_errs = analyze_xrootd_errors(error_file)
 
-        if site_errs and input("Update input filesets? (y/n): ").lower() in [
-            "y",
-            "yes",
-        ]:
+        # Timeout prompt 1
+        if site_errs and input_with_timeout(
+            "Update input filesets? (y/n) [y]: ", timeout=3, default="y"
+        ).lower() in ["y", "yes"]:
             update_input_filesets(
                 site_errs, args.year, fileset_dir, job_dir, datasets_with_missing_jobs
             )
 
-        if input("Update and resubmit jobs? (y/n): ").lower() in ["y", "yes"]:
+        # Timeout prompt 2
+        if input_with_timeout(
+            "Update and resubmit jobs? (y/n) [y]: ", timeout=3, default="y"
+        ).lower() in ["y", "yes"]:
             resubmit_jobs(
                 job_dir,
                 jobnum_missing,
