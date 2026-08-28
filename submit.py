@@ -11,12 +11,19 @@ from analysis.processors.base import BaseProcessor
 def main(args):
     with open(args.partition_json) as f:
         partition_fileset = json.load(f)
-    out = processor.run_uproot_job(
+    # Configure the Runner using coffea 2024+ API
+    futures_run = processor.Runner(
+        executor=processor.FuturesExecutor(workers=4, compression=None),
+        schema=NanoAODSchema,
+        savemetrics=False,
+    )
+    # Execute processing job using the Runner instance
+    out = futures_run(
         partition_fileset,
         treename="Events",
-        processor_instance=BaseProcessor(workflow=args.workflow, year=args.year),
-        executor=processor.futures_executor,
-        executor_args={"schema": NanoAODSchema, "workers": 4},
+        processor_instance=BaseProcessor(
+            workflow=args.workflow, year=args.year, mode="virtual"
+        ),
     )
     savepath = f"{args.output_path}/{args.dataset}"
     if args.output_format == "coffea":

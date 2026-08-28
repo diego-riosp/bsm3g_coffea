@@ -187,7 +187,7 @@ class CoffeaPlotter:
                 is_onesided = up_is_up ^ down_is_down
                 # Sum in quadrature of the systematic uncertainties taking into account if the uncertainty is one- or double-sided
                 err2_up_twosided = np.where(up_is_up, err_up**2, err_down**2)
-                err2_down_twosided = np.where(up_is_up, err_down**2, err_up**2)
+                err2_down_twosided = np.where(down_is_down, err_down**2, err_up**2)
                 err2_max = np.maximum(err2_up_twosided, err2_down_twosided)
                 err2_up_onesided = np.where(is_onesided & up_is_up, err2_max, 0)
                 err2_down_onesided = np.where(is_onesided & down_is_down, err2_max, 0)

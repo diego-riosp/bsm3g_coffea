@@ -218,8 +218,8 @@ def apply_jerc_corrections(
         jec_factory = CorrectedJetsFactory(jec_name_map[run_key], jec_stack_data)
 
     # update Jet collection
-    events["Jet"] = jec_factory.build(events.Jet, events.caches[0])
+    events["Jet"] = jec_factory.build(events.Jet)
 
     if run_key == "Run2":
         met_factory = CorrectedMETFactory(jec_name_map[run_key])
-        events["MET"] = met_factory.build(events.MET, events.Jet, {})
+        events["MET"] = met_factory.build(events.MET, events.Jet)

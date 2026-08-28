@@ -34,7 +34,10 @@ class BaseProcessor(processor.ProcessorABC):
         self,
         workflow: str,
         year: str = "2017",
+        mode="virtual"
     ):
+        assert mode in ["eager", "virtual", "dask"]
+        self._mode = mode
         self.year = year
         self.workflow = workflow
         self.year_key = year[:4]
