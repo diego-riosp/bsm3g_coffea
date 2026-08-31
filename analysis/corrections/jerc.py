@@ -103,7 +103,7 @@ def apply_jerc_corrections(
     apply_junc,
 ):
     era = get_dataset_era(dataset, year)
-    run_key = "Run3" if year.startswith("2022") or year.startswith("2023") else "Run2"
+    run_key = "Run3" if year.startswith("202") else "Run2"
 
     # add requiered variables to Jet collection
     jets = events.Jet

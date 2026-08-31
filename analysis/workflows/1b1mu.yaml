@@ -119,7 +119,7 @@ corrections:
     lhepdfWeight: true
     lhescaleWeight: true
     partonshowerWeight: true
-    topPtWeight: true
+    topPtWeight: false
     topBoostWeight: false
     pujetid: 
       - id: tight

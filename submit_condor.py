@@ -56,16 +56,31 @@ def submit_condor(args):
     jobnum_list = []
     partition_dataset = {}
     fileset_path = Path.cwd() / "analysis" / "filesets"
-    with open(f"{fileset_path}/fileset_{args.year}_NANO_lxplus.json", "r") as f:
-        root_files = json.load(f)[args.dataset]
-    root_files_list = divide_list(root_files, args.nfiles)
-    for i in range(len(root_files_list)):
-        dataset_key = (
-            f"{args.dataset}_{i+1}" if len(root_files_list) > 1 else args.dataset
-        )
-        partition_dataset[i + 1] = {dataset_key: root_files_list[i]}
-        jobnum_list.append(i + 1)
+    
+    with open(fileset_path / f"fileset_{args.year}_NANO_lxplus.json", "r") as f:
+        dataset_data = json.load(f)[args.dataset]
+        
+    # extract the dictionary of files {"path.root": "Events"} and the metadata
+    files_dict = dataset_data["files"]
+    metadata = dataset_data.get("metadata", {})
 
+    # convert the items to a list so we can divide them with divide_list
+    file_items = list(files_dict.items())
+    file_chunks = divide_list(file_items, args.nfiles)
+
+    for i, chunk in enumerate(file_chunks, start=1):
+        dataset_key = (
+            f"{args.dataset}_{i}" if len(file_chunks) > 1 else args.dataset
+        )
+        
+        # reconstruct the structure for each individual job.
+        partition_dataset[i] = {
+            dataset_key: {
+                "files": dict(chunk),
+                "metadata": metadata
+            }
+        }
+        jobnum_list.append(i)
     partition_file = job_dir / "partitions.json"
     with open(f"{partition_file}", "w") as json_file:
         json.dump(partition_dataset, json_file, indent=4)

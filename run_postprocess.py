@@ -248,7 +248,7 @@ if __name__ == "__main__":
                 ]
             ]
             logging.info(
-                f'{cutflow_df.applymap(lambda x: f"{x:.3f}" if pd.notnull(x) else "")}\n'
+                f'{cutflow_df.map(lambda x: f"{x:.3f}" if pd.notnull(x) else "")}\n'
             )
             cutflow_df.to_csv(f"{category_dir}/cutflow_{category}.csv")
             logging.info("\n")
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                     args.blind,
                 )
                 logging.info(
-                    results_df.applymap(lambda x: f"{x:.5f}" if pd.notnull(x) else "")
+                    results_df.map(lambda x: f"{x:.5f}" if pd.notnull(x) else "")
                 )
                 logging.info("\n")
                 results_df.to_csv(f"{category_dir}/results_{category}.csv")
@@ -339,7 +339,7 @@ if __name__ == "__main__":
             combined_cutflow = combine_cutflows(cutflow_pre, cutflow_post)
             combined_cutflow.to_csv(category_dir / f"cutflow_{category}.csv")
             logging.info(
-                combined_cutflow.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+                combined_cutflow.map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
             )
             if not "eff" in args.workflow:
                 # load and combine results tables
@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
                 print_header(f"Results")
                 logging.info(
-                    combined_results.applymap(
+                    combined_results.map(
                         lambda x: f"{x:.5f}" if pd.notnull(x) else ""
                     )
                 )
