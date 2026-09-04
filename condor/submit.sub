@@ -12,8 +12,4 @@ request_memory        = MEMORYM
 +JobFlavour           = "longlunch"
 +SingularityImage     = "/cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask-almalinux9:2026.5.0-py3.13"
 
-on_exit_remove        = (ExitBySignal == False) && (ExitCode == 0)
-max_retries           = 3
-periodic_release      = (JobStatus == 5) && ((CurrentTime - EnteredCurrentStatus) > 300) && (NumJobStarts < 3)
-
 Queue JOBNUM from JOBNUM_FILE

@@ -85,6 +85,11 @@ def parse_args():
         default="2000",
         help="Requested memory (in MB) for the condor job",
     )
+    parser.add_argument(
+        "--global",
+        action="store_true",
+        help="Replace XRootD urls by cms-xrd-global.cern.ch in partitions.json",
+    )
     return parser.parse_args()
 
 
@@ -327,12 +332,31 @@ if __name__ == "__main__":
         site_errs = analyze_xrootd_errors(error_file)
 
         # Timeout prompt 1
-        if site_errs and input_with_timeout(
+        if (site_errs) and input_with_timeout(
             "Update input filesets? (y/n) [y]: ", timeout=3, default="y"
         ).lower() in ["y", "yes"]:
             update_input_filesets(
-                site_errs, args.year, fileset_dir, job_dir, datasets_with_missing_jobs
+                site_errs,
+                args.year,
+                fileset_dir,
+                job_dir,
+                datasets_with_missing_jobs,
             )
+        if getattr(args, 'global'):
+            partition_files = job_dir.glob("*/partitions.json")
+
+            for partition_file in partition_files:
+                if partition_file.is_file():
+                    subprocess.run(
+                        [
+                            "sed",
+                            "-i",
+                            "-E",
+                            r"s#root://[^/]+/+#root://cms-xrd-global.cern.ch//#g",
+                            str(partition_file),
+                        ],
+                        check=True,
+                    )
 
         # Timeout prompt 2
         if input_with_timeout(
