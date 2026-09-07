@@ -31,6 +31,7 @@ if __name__ == "__main__":
             "2022postEE",
             "2023preBPix",
             "2023postBPix",
+            "2024",
         ],
         help="dataset year",
     )

@@ -13,9 +13,12 @@ def main(args):
         partition_fileset = json.load(f)
     # Configure the Runner using coffea 2024+ API
     futures_run = processor.Runner(
-        executor=processor.FuturesExecutor(workers=4, compression=None),
+        executor=processor.FuturesExecutor(workers=4, compression=None, retries=6),
         schema=NanoAODSchema,
+        chunksize=50000,
         savemetrics=False,
+        xrootdtimeout=600,
+        align_clusters=True
     )
     # Execute processing job using the Runner instance
     out = futures_run(
@@ -58,6 +61,7 @@ if __name__ == "__main__":
             "2022postEE",
             "2023preBPix",
             "2023postBPix",
+            "2024",
         ],
         help="dataset year",
     )
