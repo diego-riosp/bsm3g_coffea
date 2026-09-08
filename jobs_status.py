@@ -332,15 +332,15 @@ if __name__ == "__main__":
     jobnum_missing, datasets_with_missing_jobs = print_job_status(jobnum, jobnum_done)
 
     if jobnum_missing and datasets_with_missing_jobs:
-        site_errs = analyze_xrootd_errors(error_file)
+        #site_errs = analyze_xrootd_errors(error_file)
 
-        if site_errs and timed_input("Update input filesets?", timeout=3, default="y") in [
-            "y",
-            "yes",
-        ]:
-            update_input_filesets(
-                site_errs, args.year, fileset_dir, job_dir, datasets_with_missing_jobs
-            )
+        #if site_errs and timed_input("Update input filesets?", timeout=3, default="y") in [
+        #    "y",
+        #    "yes",
+        #]:
+        #    update_input_filesets(
+        #        site_errs, args.year, fileset_dir, job_dir, datasets_with_missing_jobs
+        #    )
 
         if timed_input("Update and resubmit jobs?", timeout=3, default="y") in ["y", "yes"]:
             resubmit_jobs(
