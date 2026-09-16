@@ -13,12 +13,13 @@ def main(args):
         partition_fileset = json.load(f)
     # Configure the Runner using coffea 2024+ API
     futures_run = processor.Runner(
-        executor=processor.FuturesExecutor(workers=4, compression=None, retries=6),
+        executor=processor.FuturesExecutor(workers=args.workers, compression=None, retries=6),
         schema=NanoAODSchema,
-        chunksize=50000,
+        chunksize=100000,
         savemetrics=False,
-        xrootdtimeout=600,
-        align_clusters=True
+        xrootdtimeout=120,
+        align_clusters=True,
+        skipbadfiles=True
     )
     # Execute processing job using the Runner instance
     out = futures_run(
@@ -90,6 +91,17 @@ if __name__ == "__main__":
         default="coffea",
         choices=["coffea", "root"],
         help="format of output histogram",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=4,
+        help="change the number of workers to process the analysis",
+    )
+    parser.add_argument(
+        "--global",
+        action="store_true",
+        help="send xrd-cms-global partition filesets",
     )
     args = parser.parse_args()
     main(args)

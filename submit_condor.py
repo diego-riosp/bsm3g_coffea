@@ -82,8 +82,12 @@ def submit_condor(args):
         }
         jobnum_list.append(i)
     partition_file = job_dir / "partitions.json"
+ 
     with open(f"{partition_file}", "w") as json_file:
         json.dump(partition_dataset, json_file, indent=4)
+
+    if getattr(args,"global"):
+        subprocess.run(f"sed -i -E 's#root://.*/store/#root://cms-xrd-global.cern.ch//store/#g' {partition_file}",shell=True)
 
     jobnum_file = job_dir / "jobnum.txt"
     with open(f"{jobnum_file}", "w") as f:
@@ -189,8 +193,20 @@ if __name__ == "__main__":
         "-m",
         "--memory",
         type=str,
-        default="2000",
+        default="4000",
         help="Requested memory (in MB) for the condor job",
+    )
+    parser.add_argument(
+        "--workers",
+        dest="workers",
+        type=int,
+        default=4,
+        help="change the number of workers to process the analysis",
+    )
+    parser.add_argument(
+        "--global",
+        action="store_true",
+        help="send xrd-cms-global partition filesets",
     )
     args = parser.parse_args()
     submit_condor(args)
