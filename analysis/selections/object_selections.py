@@ -137,9 +137,9 @@ class ObjectSelector:
         qcd_tf_electrons = self.events.Electron
         
         qcd_tf_electrons["is_loose"] = working_points.electrons_id(self.events, 'loose') & working_points.electrons_iso(self.events, 'loose')
-        qcd_tf_electrons["is_tight"] = working_points.electrons_id(self.events, 'wp80iso') & working_points.electrons_iso(self.events, 'tight')
-        qcd_tf_electrons["is_not_tight"] = ~(working_points.electrons_id(self.events, 'wp80iso') & working_points.electrons_iso(self.events, 'tight'))
-        qcd_tf_electrons["is_loose_not_tight"] = working_points.electrons_id(self.events, 'loose') & working_points.electrons_iso(self.events, 'loose') & ~(working_points.electrons_id(self.events, 'wp80iso') & working_points.electrons_iso(self.events, 'tight'))
+        qcd_tf_electrons["is_tight"] = working_points.electrons_id(self.events, 'wp80iso')
+        qcd_tf_electrons["is_not_tight"] = ~working_points.electrons_id(self.events, 'wp80iso')
+        qcd_tf_electrons["is_loose_not_tight"] = working_points.electrons_id(self.events, 'loose') & working_points.electrons_iso(self.events, 'loose') & ~working_points.electrons_id(self.events, 'wp80iso')
         qcd_tf_electrons["is_barrel"] = np.abs(self.events.Electron.eta) < 1.44
 
         config_builder = WorkflowConfigBuilder(workflow="qcd_tf_ele")
@@ -158,10 +158,11 @@ class ObjectSelector:
         
         qcd_tf_muons["is_loose"] = working_points.muons_id(self.events, 'loose') & working_points.muons_iso(self.events, 'loose') 
         qcd_tf_muons["is_tight"] = working_points.muons_id(self.events, 'tight') & working_points.muons_iso(self.events, 'tight')
-        qcd_tf_muons["is_loose_not_tight"] = working_points.muons_iso(self.events, 'loose') & working_points.muons_id(self.events, 'loose') & ~working_points.muons_id(self.events, 'tight')
+        qcd_tf_muons["is_not_tight"] = ~(working_points.muons_id(self.events, 'tight') & working_points.muons_iso(self.events, 'tight'))
+        qcd_tf_muons["is_loose_not_tight"] = working_points.muons_iso(self.events, 'loose') & working_points.muons_id(self.events, 'loose') & ~(working_points.muons_id(self.events, 'tight') & working_points.muons_iso(self.events, 'tight'))
         qcd_tf_muons["is_barrel"] = np.abs(self.events.Muon.eta) < 1.479
 
-        config_builder = WorkflowConfigBuilder(workflow="qcd_tf_ele_SingleMu")
+        config_builder = WorkflowConfigBuilder(workflow="qcd_tf_mu")
         workflow_config = config_builder.build_workflow_config()
         event_selection = workflow_config.event_selection
         hlt_paths = event_selection["hlt_paths"]

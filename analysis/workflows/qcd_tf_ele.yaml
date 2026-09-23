@@ -128,9 +128,9 @@ corrections:
       - id: tight
     muon: false
     electron:
-      - id: wp80iso
+      - id: false
       - reco: true
-      - trigger: true
+      - trigger: false
     tau: false
 histogram_config:
   flow: true
