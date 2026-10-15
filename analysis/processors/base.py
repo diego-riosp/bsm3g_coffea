@@ -116,25 +116,39 @@ class BaseProcessor(processor.ProcessorABC):
 
         if not self.is_mc:
             return self.process_shift(events, shift_name="nominal")
+        met_key = "MET" if self.run == "2" else "PuppiMET"
+        met = getattr(events, met_key)
 
-        # define object-level shifts
-        shifts = [({"Jet": events.Jet, "MET": events.MET if self.run == "2" else events.PuppiMET, "Muon": events.Muon, "Tau": events.Tau}, "nominal")]
+        shifts = [({"Jet": events.Jet, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, "nominal")]
+
         if self.workflow_config.corrections_config["apply_obj_syst"]:
             if self.run == "2":
-                shifts.extend(
-                    [
-                        ({"Jet": events.Jet, "MET": events.MET.rochester.up, "Muon": events.Muon.rochester.up, "Tau": events.Tau}, f"CMS_rochester_{self.year_key}Up"),
-                        ({"Jet": events.Jet, "MET": events.MET.rochester.down, "Muon": events.Muon.rochester.down, "Tau": events.Tau}, f"CMS_rochester_{self.year_key}Down"),
-                        ({"Jet": events.Jet.JES_jes.up, "MET": events.MET.JES_jes.up, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_scale_j_{self.year_key}Up"),
-                        ({"Jet": events.Jet.JES_jes.down, "MET": events.MET.JES_jes.down, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_scale_j_{self.year_key}Down"),
-                        ({"Jet": events.Jet.JER.up, "MET": events.MET.JER.up, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Up"),
-                        ({"Jet": events.Jet.JER.down, "MET": events.MET.JER.down, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Down"),
-                        ({"Jet": events.Jet, "MET": events.MET.MET_UnclusteredEnergy.up, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_met_unclustered_{self.year_key}Up"),
-                        ({"Jet": events.Jet, "MET": events.MET.MET_UnclusteredEnergy.down, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_met_unclustered_{self.year_key}Down"),
-                        ({"Jet": events.Jet, "MET": events.MET.tau_energy.up, "Muon": events.Muon, "Tau": events.Tau.tau_energy.up}, f"CMS_t_energy_{self.year_key}Up"),
-                        ({"Jet": events.Jet, "MET": events.MET.tau_energy.down, "Muon": events.Muon, "Tau": events.Tau.tau_energy.down}, f"CMS_t_energy_{self.year_key}Down"),
-                    ]
-                )
+                run_shifts = [
+                    ({"Jet": events.Jet, met_key: met.rochester.up, "Muon": events.Muon.rochester.up, "Tau": events.Tau}, f"CMS_rochester_{self.year_key}Up"),
+                    ({"Jet": events.Jet, met_key: met.rochester.down, "Muon": events.Muon.rochester.down, "Tau": events.Tau}, f"CMS_rochester_{self.year_key}Down"),
+                    ({"Jet": events.Jet.JER.up, met_key: met.JER.up, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Up"),
+                    ({"Jet": events.Jet.JER.down, met_key: met.JER.down, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Down"),
+                    ({"Jet": events.Jet, met_key: met.MET_UnclusteredEnergy.up, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_met_unclustered_{self.year_key}Up"),
+                    ({"Jet": events.Jet, met_key: met.MET_UnclusteredEnergy.down, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_met_unclustered_{self.year_key}Down"),
+                    ({"Jet": events.Jet, met_key: met.tau_energy.up, "Muon": events.Muon, "Tau": events.Tau.tau_energy.up}, f"CMS_t_energy_{self.year_key}Up"),
+                    ({"Jet": events.Jet, met_key: met.tau_energy.down, "Muon": events.Muon, "Tau": events.Tau.tau_energy.down}, f"CMS_t_energy_{self.year_key}Down"),
+                ]
+            else:
+                run_shifts = [
+                    ({"Jet": events.Jet, met_key: met.ptscalecorr.up, "Muon": events.Muon.ptscalecorr.up, "Tau": events.Tau}, f"CMS_scale_mu_{self.year_key}Up"),
+                    ({"Jet": events.Jet, met_key: met.ptscalecorr.down, "Muon": events.Muon.ptscalecorr.down, "Tau": events.Tau}, f"CMS_scale_mu_{self.year_key}Down"),
+                    ({"Jet": events.Jet, met_key: met.ptresolcorr.up, "Muon": events.Muon.ptresolcorr.up, "Tau": events.Tau}, f"CMS_res_mu_{self.year_key}Up"),
+                    ({"Jet": events.Jet, met_key: met.ptresolcorr.down, "Muon": events.Muon.ptresolcorr.down, "Tau": events.Tau}, f"CMS_res_mu_{self.year_key}Down"),
+                    ({"Jet": events.Jet.JES_jes.up, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_scale_j_{self.year_key}Up"),
+                    ({"Jet": events.Jet.JES_jes.down, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_scale_j_{self.year_key}Down"),
+                ]
+                if self.year != "2024":
+                    run_shifts.extend([
+                        ({"Jet": events.Jet.JER.up, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Up"),
+                        ({"Jet": events.Jet.JER.down, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Down"),
+                    ])
+            shifts.extend(run_shifts)
+        
         return processor.accumulate(
             self.process_shift(update(events, collections), name)
             for collections, name in shifts

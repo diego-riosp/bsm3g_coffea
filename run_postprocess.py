@@ -1,37 +1,42 @@
-import gc
-import sys
-import yaml
-import glob
-import logging
 import argparse
-import subprocess
-import numpy as np
-import pandas as pd
+import glob
+import gc
+import logging
 from pathlib import Path
+import subprocess
+import sys
 from collections import defaultdict
-from coffea.util import save, load
-from coffea.processor import accumulate
-from analysis.utils import make_output_directory
+
 from analysis.filesets.utils import get_dataset_config, get_process_maps
-from analysis.workflows.config import WorkflowConfigBuilder
 from analysis.postprocess.coffea_plotter import CoffeaPlotter
-from analysis.postprocess.coffea_postprocessor import (
-    save_process_histograms_by_process,
-    save_process_histograms_by_sample,
-    load_processed_histograms,
-    get_results_report,
-)
+from analysis.postprocess.coffea_postprocessor import get_results_report
 from analysis.postprocess.utils import (
+    build_systematic_summary,
+    clear_output_directory,
+    combine_cutflows,
+    combine_event_tables,
+    df_to_latex_asymmetric,
+    df_to_latex_average,
+    filter_histogram_variations,
+    should_keep_entry,
     print_header,
     setup_logger,
-    clear_output_directory,
-    combine_event_tables,
-    combine_cutflows,
-    df_to_latex_average,
-    df_to_latex_asymmetric,
     uncertainty_table,
-    build_systematic_summary,
 )
+from analysis.utils import make_output_directory
+from analysis.workflows.config import WorkflowConfigBuilder
+from coffea.processor import accumulate
+from coffea.util import load, save
+import numpy as np
+import pandas as pd
+import yaml
+
+
+def map_dataframe(df, func):
+    """Applies a function to a DataFrame using map if available, or applymap in older versions."""
+    if hasattr(df, "map"):
+        return df.map(func)
+    return df.applymap(func)
 
 
 def parse_arguments():
@@ -107,7 +112,39 @@ def parse_arguments():
     parser.add_argument(
         "--eos", action="store_true", help="Enable reading outputs from /eos"
     )
+    parser.add_argument(
+        "--include_weights",
+        type=str,
+        default="all",
+        help="weights to include when filling histograms, split by ','. Specifying `all` will run through all variables.",
+    )
+    parser.add_argument(
+        "--exclude_weights",
+        type=str,
+        default="",
+        help="weights to exclude when filling histograms, split by ','",
+    )
     return parser.parse_args()
+
+
+def apply_weight_filters_to_config(workflow_config, include_weights: str, exclude_weights: str):
+    """Applies the weight filters directly to the workflow_config object if event_weights exists."""
+    if not hasattr(workflow_config, "event_weights") or not workflow_config.event_weights:
+        return
+
+    inc_list = [w.strip() for w in include_weights.split(",") if w.strip()] if include_weights and include_weights != "all" else None
+    exc_list = [w.strip() for w in exclude_weights.split(",") if w.strip()] if exclude_weights else []
+
+    if isinstance(workflow_config.event_weights, dict):
+        if exc_list:
+            for w in list(workflow_config.event_weights.keys()):
+                if any(exc in w for exc in exc_list):
+                    workflow_config.event_weights[w] = False
+
+        if inc_list is not None:
+            for w in list(workflow_config.event_weights.keys()):
+                if not any(inc in w for inc in inc_list):
+                    workflow_config.event_weights[w] = False
 
 
 def load_year_histograms(year: str, output_dir: Path):
@@ -138,6 +175,8 @@ if __name__ == "__main__":
 
     config_builder = WorkflowConfigBuilder(workflow=args.workflow)
     workflow_config = config_builder.build_workflow_config()
+    apply_weight_filters_to_config(workflow_config, args.include_weights, args.exclude_weights)
+
     event_selection = workflow_config.event_selection
     categories = workflow_config.event_selection["categories"]
     processed_histograms = None
@@ -184,30 +223,132 @@ if __name__ == "__main__":
             else:
                 grouped_outputs[sample_name] = [output_file]
 
-        for sample in grouped_outputs:
-            save_process_histograms_by_sample(
-                year=args.year,
-                output_dir=output_dir,
-                sample=sample,
-                grouped_outputs=grouped_outputs,
-                categories=categories,
-            )
-            gc.collect()
+        # accumulate histograms and metadata by sample
+        print_header("Accumulating by sample")
+        outputs = {}
+        for sample, coffea_files in grouped_outputs.items():
+            logging.info(f"Processing {sample}")
+            for coffea_file in coffea_files:
+                try:
+                    output = load(coffea_file)
+                except (EOFError, Exception) as e:
+                    logging.warning(
+                        f"Skipping corrupted or incomplete file {coffea_file}: {e}"
+                    )
+                    continue
 
-        for process in process_samples_map:
-            save_process_histograms_by_process(
-                year=args.year,
-                output_dir=output_dir,
-                process_samples_map=process_samples_map,
-                process=process,
-                categories=categories,
-            )
-            gc.collect()
+                if output:
+                    if sample not in outputs:
+                        outputs[sample] = output
+                    else:
+                        outputs[sample] = accumulate([outputs[sample], output])
 
-        processed_histograms = load_processed_histograms(
-            year=args.year,
-            output_dir=output_dir,
-            process_samples_map=process_samples_map,
+            grouped_metadata = {}
+            for fname in grouped_outputs[sample]:
+                try:
+                    output = load(fname)
+                except (EOFError, Exception) as e:
+                    logging.warning(
+                        f"Skipping metadata from corrupted file {fname}: {e}"
+                    )
+                    continue
+
+                if output and "metadata" in output:
+                    # group metadata by sample
+                    for meta_key in output["metadata"]:
+                        if meta_key in grouped_metadata:
+                            grouped_metadata[meta_key].append(
+                                output["metadata"][meta_key]
+                            )
+                        else:
+                            grouped_metadata[meta_key] = [
+                                output["metadata"][meta_key]
+                            ]
+
+        # scale histograms to lumi-xsec
+        print_header("Scaling histograms to lumi-xsec")
+        lumi_file = Path.cwd() / "analysis" / "postprocess" / "luminosity.yaml"
+        with open(lumi_file, "r") as f:
+            luminosities = yaml.safe_load(f)
+
+        logging.info(f"luminosity [1/pb]: {luminosities[args.year]}")
+
+        scaled_histograms = {}
+        dataset_config = get_dataset_config(args.year)
+        for sample in outputs:
+            scaled_histograms[sample] = {}
+            xsec = dataset_config[sample]["xsec"]
+            sumw = outputs[sample]["metadata"]["sumw"]
+
+            weight = 1
+            if dataset_config[sample]["era"] == "MC":
+                weight = (luminosities[args.year] * xsec) / sumw
+
+            logging.info(f"{sample} xsec [pb]: {xsec} sumw: {sumw} weight: {weight}")
+            histograms_to_scale = outputs[sample]["histograms"]
+            for entry in histograms_to_scale:
+                if not should_keep_entry(entry, args.include_weights, args.exclude_weights):
+                    continue
+                scaled_obj = histograms_to_scale[entry] * weight
+                scaled_histograms[sample][entry] = filter_histogram_variations(
+                    scaled_obj, args.include_weights, args.exclude_weights
+                )
+
+            metadata = {}
+            for meta_key in grouped_metadata:
+                metadata[meta_key] = accumulate(grouped_metadata[meta_key])
+            scaled_cutflow = {}
+            for category in categories:
+                category_dir = Path(f"{output_dir}/{category}")
+                if not category_dir.exists():
+                    category_dir.mkdir(parents=True, exist_ok=True)
+                scaled_cutflow[category] = {}
+                if category in metadata:
+                    for cut, nevents in metadata[category]["cutflow"].items():
+                        scaled_cutflow[category][cut] = nevents * weight
+                processed_cutflow = {sample: scaled_cutflow[category]}
+                cutflow_file = Path(
+                    f"{output_dir}/{category}/cutflow_{category}_{sample}.coffea"
+                )
+                save(processed_cutflow, cutflow_file)
+
+        # group histograms by process
+        print_header("Accumulating by process")
+        processed_histograms = {}
+        for process, samples in process_samples_map.items():
+            logging.info(f"Processing {process}")
+            for sample in samples:
+                if sample in outputs:
+                    if process not in processed_histograms:
+                        processed_histograms[process] = scaled_histograms[sample]
+                    else:
+                        processed_histograms[process] = accumulate(
+                            [processed_histograms[process], scaled_histograms[sample]]
+                        )
+            cutflow = {}
+            for category in categories:
+                logging.info(f"saving cutflow for category {category}\n")
+                category_dir = Path(f"{output_dir}/{category}")
+                cut_to_accumulate = []
+                df = pd.DataFrame()
+                for sample in process_samples_map[process]:
+                    cutflow_file = category_dir / f"cutflow_{category}_{sample}.coffea"
+                    if cutflow_file.exists():
+                        try:
+                            df_sample = pd.DataFrame(load(cutflow_file).values())
+                            df = pd.concat([df, df_sample])
+                        except (EOFError, Exception) as e:
+                            logging.warning(
+                                f"Skipping corrupted cutflow {cutflow_file}: {e}"
+                            )
+
+                cutflow_df = pd.DataFrame(df.sum())
+                cutflow_df.columns = [process]
+                cutflow_file = Path(f"{output_dir}/{category}/cutflow_{category}_{process}.csv")
+                cutflow_df.to_csv(cutflow_file)
+        save(
+            processed_histograms,
+            f"{output_dir}/{args.year}_processed_histograms.coffea",
         )
 
         for category in categories:
@@ -248,9 +389,10 @@ if __name__ == "__main__":
                     if process not in to_process
                 ]
             ]
-            logging.info(
-                f'{cutflow_df.applymap(lambda x: f"{x:.3f}" if pd.notnull(x) else "")}\n'
+            formatted_cutflow = map_dataframe(
+                cutflow_df, lambda x: f"{x:.3f}" if pd.notnull(x) else ""
             )
+            logging.info(f"{formatted_cutflow}\n")
             cutflow_df.to_csv(f"{category_dir}/cutflow_{category}.csv")
             logging.info("\n")
 
@@ -263,9 +405,10 @@ if __name__ == "__main__":
                     columns_to_drop,
                     args.blind,
                 )
-                logging.info(
-                    results_df.applymap(lambda x: f"{x:.5f}" if pd.notnull(x) else "")
+                formatted_results = map_dataframe(
+                    results_df, lambda x: f"{x:.5f}" if pd.notnull(x) else ""
                 )
+                logging.info(formatted_results)
                 logging.info("\n")
                 results_df.to_csv(f"{category_dir}/results_{category}.csv")
 
@@ -339,9 +482,10 @@ if __name__ == "__main__":
             )
             combined_cutflow = combine_cutflows(cutflow_pre, cutflow_post)
             combined_cutflow.to_csv(category_dir / f"cutflow_{category}.csv")
-            logging.info(
-                combined_cutflow.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+            formatted_cutflow = map_dataframe(
+                combined_cutflow, lambda x: f"{x:.2f}" if pd.notnull(x) else ""
             )
+            logging.info(formatted_cutflow)
             if not "eff" in args.workflow:
                 # load and combine results tables
                 results_pre = pd.read_csv(
@@ -363,11 +507,10 @@ if __name__ == "__main__":
                 )
 
                 print_header(f"Results")
-                logging.info(
-                    combined_results.applymap(
-                        lambda x: f"{x:.5f}" if pd.notnull(x) else ""
-                    )
+                formatted_results = map_dataframe(
+                    combined_results, lambda x: f"{x:.5f}" if pd.notnull(x) else ""
                 )
+                logging.info(formatted_results)
                 logging.info("\n")
                 combined_results.to_csv(category_dir / f"results_{category}.csv")
                 if not args.blind:

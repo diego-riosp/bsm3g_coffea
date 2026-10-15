@@ -81,14 +81,37 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--global",
+        dest="use_global",
         action="store_true",
         help="send xrd-cms-global partition filesets",
     )
+    parser.add_argument(
+        "--skipbadfiles",
+        action="store_true",
+        help="skip root files with errors",
+    )
+    # Mutually exclusive group for dataset discovery strategy
+    discovery_group = parser.add_mutually_exclusive_group()
+    discovery_group.add_argument(
+        "--das",
+        dest="discovery",
+        action="store_const",
+        const="das",
+        help="Use dasgoclient for dataset discovery (Default).",
+    )
+    discovery_group.add_argument(
+        "--rucio",
+        dest="discovery",
+        action="store_const",
+        const="rucio",
+        help="Use DataDiscoveryCLI (Rucio) for dataset discovery.",
+    )
+    parser.set_defaults(discovery="rucio")
     args = parser.parse_args()
 
     # submit (or prepare) a job for each dataset using the given arguments
     datasets_to_run = get_datasets_to_run_over(args.workflow, args.year)
-    fileset_checker(datasets_to_run, args.year)
+    fileset_checker(samples=datasets_to_run, year=args.year, discovery=args.discovery)
     cmd = ["python3", "submit_condor.py"]
     for dataset in datasets_to_run:
         cmd_args = [
@@ -114,7 +137,12 @@ if __name__ == "__main__":
         if args.label:
             cmd_args.append("--label")
             cmd_args.append(args.label)
-        if getattr(args,"global"):
+        if args.use_global:
             cmd_args.append("--global")
-
+        if args.skipbadfiles:
+            cmd_args.append("--skipbadfiles")
+        if args.discovery == "rucio":
+            cmd_args.append("--rucio")
+        else:
+            cmd_args.append("--das")
         subprocess.run(cmd + cmd_args)

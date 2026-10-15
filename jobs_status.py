@@ -1,5 +1,6 @@
 """Check job outputs, identify missing results, and optionally resubmit jobs or update input filesets based on xrootd site issues"""
 
+import re
 import sys
 import select
 import yaml
@@ -97,9 +98,37 @@ def parse_args():
     )
     parser.add_argument(
         "--global",
+        dest="use_global",
         action="store_true",
         help="send xrd-cms-global partition filesets",
     )
+    parser.add_argument(
+        "--deep-reset",
+        action="store_true",
+        help="Redo fileset discovery",
+    )
+    parser.add_argument(
+        "--skipbadfiles",
+        action="store_true",
+        help="skip root files with errors",
+    )
+    # Mutually exclusive group for dataset discovery strategy
+    discovery_group = parser.add_mutually_exclusive_group()
+    discovery_group.add_argument(
+        "--das",
+        dest="discovery",
+        action="store_const",
+        const="das",
+        help="Use dasgoclient for dataset discovery (Default).",
+    )
+    discovery_group.add_argument(
+        "--rucio",
+        dest="discovery",
+        action="store_const",
+        const="rucio",
+        help="Use DataDiscoveryCLI (Rucio) for dataset discovery.",
+    )
+    parser.set_defaults(discovery="rucio")
     return parser.parse_args()
 
 
@@ -239,7 +268,12 @@ def update_input_filesets(
     samples_str = (
         " ".join(datasets_with_missing_jobs) if datasets_with_missing_jobs else ""
     )
-    subprocess.run(["python3", "fetch.py", "--year", year, "--samples", samples_str, "--skip_site"])
+    cmd = ["python3", "fetch.py", "--year", year, "--samples", samples_str, "--skip_site"]
+    if args.discovery == "rucio":
+        cmd.append("--rucio")
+    else:
+        cmd.append("--das")
+    subprocess.run(cmd)
 
     fileset_path = fileset_dir / f"fileset_{year}_NANO_lxplus.json"
     all_filesets = json.loads(fileset_path.read_text())
@@ -276,23 +310,27 @@ def update_input_filesets(
             subprocess.run(f"sed -i -E 's#root://.*/store/#root://cms-xrd-global.cern.ch//store/#g' {partition_file}",shell=True)
 
 
-def resubmit_jobs(job_dir, jobnum_missing, datasets_with_missing_jobs, workflow, year, use_global):
-    """
-    Prepare and resubmit jobs for datasets with missing jobs.
 
-    Parameters:
-    -----------
-        job_dir (Path): Directory with Condor job files.
-        jobnum_missing (dict): Missing job numbers per dataset.
-        datasets_with_missing_jobs (list): List of affected datasets.
-        workflow (str): Workflow name.
-        year (str): Dataset year.
-    """
+def resubmit_jobs(
+    job_dir,
+    jobnum_missing,
+    datasets_with_missing_jobs,
+    workflow,
+    year,
+    use_global,
+    memory,
+):
+    """Prepare and resubmit jobs for datasets with missing jobs, updating
+    requested memory."""
     to_resubmit = []
     for dataset in datasets_with_missing_jobs:
-        partition_file = job_dir / dataset / "partitions.json" 
+        partition_file = job_dir / dataset / "partitions.json"
         if use_global:
-            subprocess.run(f"sed -i -E 's#root://.*/store/#root://cms-xrd-global.cern.ch//store/#g' {partition_file}",shell=True)
+            subprocess.run(
+                f"sed -i -E 's#root://.*/store/#root://cms-xrd-global.cern.ch//store/#g'"
+                f" {partition_file}",
+                shell=True,
+            )
         missing_file = job_dir / dataset / "missing.txt"
         with open(missing_file, "w") as f:
             print(*sorted(jobnum_missing[dataset]), sep="\n", file=f)
@@ -301,13 +339,23 @@ def resubmit_jobs(job_dir, jobnum_missing, datasets_with_missing_jobs, workflow,
         condor_backup = condor_file.with_name(condor_file.stem + "_all.sub")
         subprocess.run(["cp", str(condor_file), str(condor_backup)])
 
-        submit_text = condor_file.read_text().replace("jobnum.txt", "missing.txt")
+        submit_text = condor_file.read_text()
+        submit_text = submit_text.replace("jobnum.txt", "missing.txt")
+
+        submit_text = re.sub(
+            r"(request_memory\s*=\s*)\d+", f"\\g<1>{memory}", submit_text
+        )
+
         condor_file.write_text(submit_text)
-        logging.info(f"Condor file updated: {workflow}/{year}/{dataset}")
+        logging.info(
+            f"Condor file updated: {workflow}/{year}/{dataset}"
+        )
         to_resubmit.append(str(condor_file))
 
     for submit_file in to_resubmit:
         subprocess.run(["condor_submit", submit_file])
+
+
 
 
 if __name__ == "__main__":
@@ -319,18 +367,27 @@ if __name__ == "__main__":
     else:
         workflow_dir = args.workflow
 
-    if args.reset:
+    if args.reset or args.deep_reset:
         subprocess.run(f"rm -rf condor/{workflow_dir}/{args.year}", shell=True)
         subprocess.run(f"rm -rf condor/logs/{workflow_dir}/{args.year}", shell=True)
-        subprocess.run(f"rm -rf analysis/filesets/{args.year}_sites.yaml", shell=True)
-        subprocess.run(
-            f"rm -rf analysis/filesets/fileset_{args.year}_NANO_lxplus.json", shell=True
-        )
+        if args.deep_reset:
+            subprocess.run(f"rm -rf analysis/filesets/{args.year}_sites.yaml", shell=True)
+            subprocess.run(
+                f"rm -rf analysis/filesets/fileset_{args.year}_NANO_lxplus.json", shell=True
+            )
         reset_cmd = f"python3 runner.py -w {args.workflow} -y {args.year} -m {args.memory} --workers {args.workers}"
         if args.label:
             reset_cmd += f" -l {args.label}"
         if args.eos:
             reset_cmd += " --eos"
+        if args.skipbadfiles:
+            reset_cmd += " --skipbadfiles"
+        if args.use_global:
+            reset_cmd += " --global"
+        if args.discovery == "rucio":
+            reset_cmd += " --rucio"
+        else:
+            reset_cmd += " --das"
         subprocess.run(reset_cmd, shell=True)
 
     output_dir = make_output_directory(args)
@@ -366,5 +423,6 @@ if __name__ == "__main__":
                 datasets_with_missing_jobs,
                 args.workflow,
                 args.year,
-                getattr(args,"global")
+                args.use_global,
+                args.memory
             )

@@ -7,7 +7,12 @@ from pathlib import Path
 from coffea.util import load, save
 from coffea.processor import accumulate
 from analysis.filesets.utils import get_dataset_config, get_process_maps
-from analysis.postprocess.utils import print_header, get_variations_keys
+from analysis.postprocess.utils import (
+    print_header,
+    get_variations_keys,
+    filter_histogram_variations,
+    should_keep_entry,
+)
 
 
 def save_process_histograms_by_sample(
@@ -16,6 +21,8 @@ def save_process_histograms_by_sample(
     year: str,
     output_dir: str,
     categories,
+    include_weights: str = "all",
+    exclude_weights: str = "",
 ):
     print_header(f"Processing {sample} outputs")
 
@@ -66,7 +73,12 @@ def save_process_histograms_by_sample(
 
     scaled_histograms = {}
     for variable in histograms:
-        scaled_histograms[variable] = histograms[variable] * weight
+        if not should_keep_entry(variable, include_weights, exclude_weights):
+            continue
+        scaled_obj = histograms[variable] * weight
+        scaled_histograms[variable] = filter_histogram_variations(
+            scaled_obj, include_weights, exclude_weights
+        )
 
     logging.info(f"saving histograms")
     save(scaled_histograms, f"{output_dir}/{sample}.coffea")

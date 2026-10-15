@@ -42,9 +42,8 @@ def apply_jet_corrections(events: NanoEventsArray, year: str) -> None:
 
         # get corrected jets
         events["Jet"] = factories["jet_factory"][year].build(
-            add_jec_variables(events.Jet, events.fixedGridRhoFastjetAll),
-            events.caches[0],
+            add_jec_variables(events.Jet, events.fixedGridRhoFastjetAll)
         )
 
         # get corrected MET
-        events["MET"] = factories["met_factory"].build(events.MET, events.Jet, {})
+        events["MET"] = factories["met_factory"].build(events.MET, events.Jet)

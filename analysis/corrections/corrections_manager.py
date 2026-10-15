@@ -1,4 +1,5 @@
 import numpy as np
+import awkward as ak
 from coffea.analysis_tools import Weights
 from analysis.corrections import (
     TauCorrector,
@@ -25,28 +26,47 @@ from analysis.corrections import (
 )
 
 
+RUN_2024_JEC_RANGES = [
+    (379416, 380236),  # C nib1
+    (380306, 380947),  # D nib1
+    (380963, 381544),  # E nib1
+    (382229, 382262),  # F nib1
+    (382298, 383175),  # F nib2
+    (383247, 383779),  # F nib3
+    (383811, 384644),  # G nib1
+    (384933, 385801),  # G nib2
+    (385836, 386319),  # H nib1
+    (386478, 386951),  # I nib1
+]
+
 def object_corrector_manager(events, year, run, dataset, workflow_config):
     """apply object level corrections"""
 
     objcorr_config = workflow_config.corrections_config["objects"]
-
+    
     if "jets" in objcorr_config:
-        if run == "2":
-            apply_jet_corrections(events, year)
-        elif run == "3":
-            apply_jec = True
-            apply_jer = False
-            apply_junc = False
-            if hasattr(events, "genWeight"):
-                apply_jer = True
-            apply_jerc_corrections(
-                events,
-                year=year,
-                dataset=dataset,
-                apply_jec=apply_jec,
-                apply_jer=apply_jer,
-                apply_junc=apply_junc,
-            )
+        is_mc = hasattr(events, "genWeight")
+        apply_jec = True
+        apply_jer = is_mc
+        apply_junc = True
+
+        # Condición específica para Data en 2024:
+        if not is_mc and str(year) == "2024":
+            valid_run_mask = False
+            for start_run, end_run in RUN_2024_JEC_RANGES:
+                valid_run_mask = valid_run_mask | (
+                    (events.run >= start_run) & (events.run <= end_run)
+                )
+            apply_jec = ak.any(valid_run_mask)
+
+        apply_jerc_corrections(
+            events,
+            year=year,
+            dataset=dataset,
+            apply_jec=apply_jec,
+            apply_jer=apply_jer,
+            apply_junc=apply_junc,
+        )
     if "muons" in objcorr_config:
         # apply rochester corretions to muons
         if run == "2":

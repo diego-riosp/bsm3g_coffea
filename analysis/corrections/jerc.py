@@ -1,125 +1,113 @@
 # tools to apply JEC/JER and compute their uncertainties (https://cms-jerc.web.cern.ch/Recommendations/)
-# copied from https://github.com/green-cabbage/copperheadV2/blob/main/corrections/jet.py
+import gzip
+import pickle
 import yaml
-import contextlib
 import numpy as np
 import awkward as ak
 import importlib.resources
 from pathlib import Path
 from analysis.filesets.utils import get_dataset_era
-from coffea.lookup_tools import extractor
-from coffea.jetmet_tools import JECStack, CorrectedJetsFactory, CorrectedMETFactory
 
-
-# Run3 recommendations: # https://cms-jerc.web.cern.ch/JEC/
 with importlib.resources.open_text(
-    f"analysis.corrections", f"jerc_params.yaml"
+    "analysis.corrections", "jerc_params.yaml"
 ) as file:
     JEC_PARAMS = yaml.safe_load(file)
 
 
-def jec_names_and_sources(year):
-    algo = JEC_PARAMS["algorithm"][year]
-    suffix = {
-        "jec_names": [
-            f"_{level}_{algo}" for level in JEC_PARAMS["jec_levels_mc"][year]
-        ],
-        "jec_names_data": [
-            f"_{level}_{algo}" for level in JEC_PARAMS["jec_levels_data"][year]
-        ],
-        "junc_names": [f"_Uncertainty_{algo}"],
-        "junc_names_data": [f"_Uncertainty_{algo}"],
-        "junc_sources": [f"_UncertaintySources_{algo}"],
-        "junc_sources_data": [f"_UncertaintySources_{algo}"],
-        "jer_names": [f"_PtResolution_{algo}"],
-        "jersf_names": [f"_SF_{algo}"],
-    }
-    names = {}
-    for key, suff in suffix.items():
-        if "data" in key:
-            names[key] = {}
-            for run in JEC_PARAMS["runs"][year]:
-                for tag, iruns in JEC_PARAMS["jec_data_tags"][year].items():
-                    if run in iruns:
-                        names[key].update({run: [f"{tag}{s}" for s in suff]})
-        else:
-            tag = (
-                JEC_PARAMS["jer_tags"][year]
-                if "jer" in key
-                else JEC_PARAMS["jec_tags"][year]
-            )
-            names[key] = [f"{tag}{s}" for s in suff]
-    return names
+def load_factory_pkl(datatype, run_key):
+    """
+    Load the pkl.gz file containing the factories
+    (jec_factories / met_factories) that were compiled prior to execution.
+    """
+    filename = f"{datatype}_{run_key.lower()}_jec_compiled.pkl.gz"
+    path = Path(__file__).parent.parent / "data" / filename
 
-
-def get_jet_evaluator(year):
-    names = jec_names_and_sources(year)
-    extensions = {
-        "jec_names": "jec",
-        "jer_names": "jr",
-        "jersf_names": "jersf",
-        "junc_names": "junc",
-        "junc_sources": "junc",
-    }
-    # prepare evaluators for JEC, JER and their systematics
-    jec_ext = extractor()
-    for opt, ext in extensions.items():
-        # MC
-        with contextlib.ExitStack() as stack:
-            jec_files = [
-                stack.enter_context(
-                    importlib.resources.path("analysis.data.JEC", f"{name}.{ext}.txt")
-                )
-                for name in names[opt]
-            ]
-            jec_ext.add_weight_sets([f"* * {file}" for file in jec_files])
-        # Data
-        if "jer" in opt:
-            continue
-        data = []
-        for run, items in names[f"{opt}_data"].items():
-            data.extend(items)
-        data = list(set(data))
-        with contextlib.ExitStack() as stack:
-            jec_data_files = [
-                stack.enter_context(
-                    importlib.resources.path("analysis.data.JEC", f"{name}.{ext}.txt")
-                )
-                for name in data
-            ]
-            jec_ext.add_weight_sets([f"* * {file}" for file in jec_data_files])
-
-    jec_ext.finalize()
-    jet_evaluator = jec_ext.make_evaluator()
-    return jet_evaluator
-
+    with gzip.open(path, "rb") as f:
+        factories = pickle.load(f)
+    return factories
 
 def apply_jerc_corrections(
     events,
     year,
     dataset,
-    apply_jec,
-    apply_jer,
-    apply_junc,
+    apply_jec=True,
+    apply_jer=True,
+    apply_junc=True,
 ):
     era = get_dataset_era(dataset, year)
     run_key = "Run3" if year.startswith("202") else "Run2"
+    datatype = "mc" if era == "MC" else "data"
 
-    # add requiered variables to Jet collection
+    if not apply_jec:
+        if era != "MC" and not hasattr(events.Jet, "JES_jes"):
+            jes_dummy = ak.zip(
+                {
+                    "up": events.Jet,
+                    "down": events.Jet,
+                },
+                depth_limit=1,
+                with_name="JetSystematic",
+            )
+            events["Jet", "JES_jes"] = jes_dummy
+        return events
+
+    factories = load_factory_pkl(datatype, run_key)
+    
+    met_factories_dict = factories.get("met_factory")
+    jet_factories_dict = factories.get("jet_factory") or {}
+
+    # Helper function to extract factory if stored as dict or direct object
+    def get_factory(factory_obj, key):
+        if isinstance(factory_obj, dict):
+            return factory_obj.get(key)
+        return factory_obj  # Already the factory instance
+
+    if datatype == "mc":
+        jet_factory = get_factory(jet_factories_dict, year)
+        met_factory = get_factory(met_factories_dict, year)
+    else:
+        jet_factory = None
+        
+        if era and era != "None":
+            jet_factory = (
+                jet_factories_dict.get(f"{year}_Run{era}")
+                or jet_factories_dict.get(era)
+                or jet_factories_dict.get((year, era))
+            )
+            if jet_factory is None:
+                for key, val in jet_factories_dict.items():
+                    if key.startswith(f"{year}_Run") and era in key:
+                        jet_factory = val
+                        break
+
+        if jet_factory is None:
+            year_matches = [
+                val for key, val in jet_factories_dict.items() 
+                if isinstance(key, str) and key.startswith(f"{year}_")
+            ]
+            if year_matches:
+                jet_factory = year_matches[0]
+
+        if jet_factory is None and len(jet_factories_dict) == 1:
+            jet_factory = list(jet_factories_dict.values())[0]
+
+        met_factory = get_factory(met_factories_dict, year)
+
+    if jet_factory is None:
+        raise KeyError(
+            f"'jet_factory' not found for year='{year}', era='{era}' in the pkl {datatype}.\n"
+            f"Available keys: {list(jet_factories_dict.keys()) if isinstance(jet_factories_dict, dict) else jet_factories_dict}"
+        )
+
     jets = events.Jet
-    if apply_jec:
-        # set raw pT and Mass, otherwise original pT and Mass will be used as 'raw' values
-        events["Jet", "pt_raw"] = (
-            (1 - jets.rawFactor) * jets.pt if apply_jec else jets.pt
-        )
-        events["Jet", "mass_raw"] = (
-            (1 - jets.rawFactor) * jets.mass if apply_jec else jets.mass
-        )
-    if apply_jer:
-        # set ptGenJet (required for hybrid JER smearing method)
+    events["Jet", "pt_raw"] = (1 - jets.rawFactor) * jets.pt
+    events["Jet", "mass_raw"] = (1 - jets.rawFactor) * jets.mass
+
+    if apply_jer and era == "MC":
         events["Jet", "pt_gen"] = ak.values_astype(
             ak.fill_none(jets.matched_gen.pt, 0), np.float32
         )
+        
     if run_key == "Run3":
         events["Jet", "event_rho"] = (
             ak.ones_like(jets.pt) * events.Rho.fixedGridRhoFastjetAll
@@ -129,97 +117,21 @@ def apply_jerc_corrections(
             events.fixedGridRhoFastjetAll, jets.pt
         )[0]
 
-    # set inputs for jec, jer and junc stack
-    names = jec_names_and_sources(year)
-    jet_evaluator = get_jet_evaluator(year)
+    corrected_jets = jet_factory.build(events.Jet)
+    events["Jet"] = corrected_jets
 
-    stacks_def = {
-        "jec_stack": ["jec_names"],
-        "jer_stack": ["jer_names", "jersf_names"],
-        "junc_stack": ["junc_names"],
-    }
-    stacks = {}
-    for key, vals in stacks_def.items():
-        stacks[key] = []
-        for v in vals:
-            stacks[key].extend(names[v])
-    jec_input_options = {}
-    jet_variations = ["jec", "jer", "junc"]
-    for variation in jet_variations:
-        jec_input_options[variation] = {}
-        for name in stacks[f"{variation}_stack"]:
-            jec_input_options[variation][name] = jet_evaluator[name]
-    for src in names["junc_sources"]:
-        for key in jet_evaluator.keys():
-            if src in key:
-                jec_input_options["junc"][key] = jet_evaluator[key]
-    jec_options = {}
-    if apply_jec:
-        jec_options.update(jec_input_options["jec"])
-    if apply_jer:
-        jec_options.update(jec_input_options["jer"])
-    if apply_junc:
-        jec_options.update(jec_input_options["junc"])
-
-    # set jerc name map (I don't use JECStack.blank_name_map since it includes 'ptRaw' and 'massRaw' by default)
-    jec_name_map = {
-        "Run2": {
-            "JetPt": "pt",
-            "JetMass": "mass",
-            "JetEta": "eta",
-            "JetA": "area",
-            "ptGenJet": "pt_gen",
-            "ptRaw": "pt_raw",
-            "massRaw": "mass_raw",
-            "Rho": "event_rho",
-            "METpt": "pt",
-            "METphi": "phi",
-            "JetPhi": "phi",
-            "UnClusteredEnergyDeltaX": "MetUnclustEnUpDeltaX",
-            "UnClusteredEnergyDeltaY": "MetUnclustEnUpDeltaY",
-        },
-        "Run3": {
-            "JetPt": "pt",
-            "JetMass": "mass",
-            "JetEta": "eta",
-            "JetA": "area",
-            "ptGenJet": "pt_gen",
-            "Rho": "event_rho",
-            "METpt": None,
-            "METphi": None,
-            "JetPhi": "phi",
-            "UnClusteredEnergyDeltaX": None,
-            "UnClusteredEnergyDeltaY": None,
-        },
-    }
-    if apply_jec:
-        jec_name_map[run_key].update(
-            {
-                "ptRaw": "pt_raw",
-                "massRaw": "mass_raw",
-            }
-        )
-    if era == "MC":
-        # create MC factory with jec, jer and junc stack
-        stack = JECStack(jec_options)
-        jec_factory = CorrectedJetsFactory(jec_name_map[run_key], stack)
-    else:
-        # create a separate factory for the data era
-        jec_inputs_data = {}
-        for opt in ["jec", "junc"]:
-            jec_inputs_data.update(
-                {name: jet_evaluator[name] for name in names[f"{opt}_names_data"][era]}
-            )
-        for src in names["junc_sources_data"][era]:
-            for key in jet_evaluator.keys():
-                if src in key:
-                    jec_inputs_data[key] = jet_evaluator[key]
-        jec_stack_data = JECStack(jec_inputs_data)
-        jec_factory = CorrectedJetsFactory(jec_name_map[run_key], jec_stack_data)
-
-    # update Jet collection
-    events["Jet"] = jec_factory.build(events.Jet)
-
-    if run_key == "Run2":
-        met_factory = CorrectedMETFactory(jec_name_map[run_key])
+    if run_key == "Run2" and met_factory is not None:
         events["MET"] = met_factory.build(events.MET, events.Jet)
+
+    if era != "MC" and not hasattr(events.Jet, "JES_jes"):
+        jes_dummy = ak.zip(
+            {
+                "up": events.Jet,
+                "down": events.Jet,
+            },
+            depth_limit=1,
+            with_name="JetSystematic",
+        )
+        events["Jet", "JES_jes"] = jes_dummy
+
+    return events

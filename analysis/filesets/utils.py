@@ -166,7 +166,7 @@ def get_datasets_to_run_over(workflow: str, year: str):
     return datasets_to_run_over
 
 
-def fileset_checker(samples: list, year: str):
+def fileset_checker(samples: list, year: str, discovery: str):
     """check if the fileset for the given year exists, generate it otherwise"""
 
     filesets_path = Path.cwd() / "analysis" / "filesets"
@@ -184,6 +184,10 @@ def fileset_checker(samples: list, year: str):
         print("\nBuilding input filesets for:")
         print(yaml.dump(samples, default_flow_style=False, sort_keys=False, indent=2))
         cmd = f"python3 fetch.py --year {year} --samples {' '.join(samples)}"
+        if discovery == "rucio":
+            cmd += " --rucio"
+        else:
+            cmd += " --das"
         subprocess.run(cmd, shell=True)
 
 

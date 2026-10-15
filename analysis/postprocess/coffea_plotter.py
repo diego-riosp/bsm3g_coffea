@@ -109,6 +109,8 @@ class CoffeaPlotter:
             histogram_info["signal"] = {"nominal": {}}
 
         for process, histogram_dict in self.processed_histograms.items():
+            if process not in self.process_name_map.keys():
+                continue
             axis_exists = False
             if variable in histogram_dict:
                 aux_histogram = histogram_dict[variable]

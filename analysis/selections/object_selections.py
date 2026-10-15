@@ -104,7 +104,7 @@ class ObjectSelector:
 
     def select_ztojets_met(self, obj_name):
         # add muons pT to MET to simulate a 0-lepton final state
-        all_muons = ak.sum(self.objects["muons"], axis=1)
+        all_muons = self.objects["muons"].sum(axis=1)
         muons2D = ak.zip(
             {
                 "pt": all_muons.pt,
@@ -128,7 +128,7 @@ class ObjectSelector:
         self.objects[obj_name] = met2D + muons2D
         
     # --------------------------------------------------------------------------------
-    # QCD leptos
+    # QCD leptons
     # --------------------------------------------------------------------------------
 
     def select_qcd_tf_electrons(self, obj_name):

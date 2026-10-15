@@ -45,6 +45,24 @@ if __name__ == "__main__":
         action="store_true",
         help="Skip white/black sites initialization",
     )
+    # Mutually exclusive group for dataset discovery strategy
+    discovery_group = parser.add_mutually_exclusive_group()
+    discovery_group.add_argument(
+        "--das",
+        dest="discovery",
+        action="store_const",
+        const="das",
+        help="Use dasgoclient for dataset discovery (Default).",
+    )
+    discovery_group.add_argument(
+        "--rucio",
+        dest="discovery",
+        action="store_const",
+        const="rucio",
+        help="Use DataDiscoveryCLI (Rucio) for dataset discovery.",
+    )
+    parser.set_defaults(discovery="rucio")
+
     args = parser.parse_args()
 
     try:
@@ -54,23 +72,17 @@ if __name__ == "__main__":
             "VOMS proxy expired or non-existing: please run 'voms-proxy-init --voms cms'"
         )
 
-    if not args.skip_site:
+    if not args.skip_site and args.discovery == "rucio":
         # initialize white/black sites
         cmd = f"python3 analysis/filesets/build_sites.py --year {args.year}"
         subprocess.run(cmd, shell=True)
 
-    # keep container Python isolated from host user-site packages (~/.local),
-    # otherwise dask/distributed versions can be mixed
     samples_str = " ".join(args.samples) if args.samples else ""
-    cmd = (
-        f"singularity exec "
-        f"--env PYTHONNOUSERSITE=1 "
-        f"-B /afs "
-        f"-B /cvmfs "
-        f"-B analysis/filesets/rucio_utils.py:/usr/local/lib/python3.10/site-packages/coffea/dataset_tools/rucio_utils.py "
-        f"{args.image} "
-        f"python3 analysis/filesets/build_filesets.py --year {args.year} --samples {samples_str}"
-    )
+    cmd = f"python3 analysis/filesets/build_filesets.py --year {args.year} --samples {samples_str}"
+    if args.discovery == "rucio":
+        cmd += " --rucio"
+    else:
+        cmd += " --das"
     subprocess.run(cmd, shell=True)
 
     # add signal samples

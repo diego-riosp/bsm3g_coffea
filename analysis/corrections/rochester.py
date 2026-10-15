@@ -396,59 +396,7 @@ def pt_scale_var(pt, eta, phi, charge, updn, cset, nested=False):
     return pt_var
 
 
-def apply_rochester_corrections_run3(events: ak.Array, year: str):
-    # save original muon pT
-    events["Muon", "pt_raw"] = ak.ones_like(events.Muon.pt) * events.Muon.pt
-    events["PuppiMET", "pt_raw"] = ak.ones_like(events.PuppiMET.pt) * events.PuppiMET.pt
-    events["PuppiMET", "phi_raw"] = (
-        ak.ones_like(events.PuppiMET.phi) * events.PuppiMET.phi
-    )
 
-    # get correction set
-    json_path = Path.cwd() / "analysis" / "data" / f"{year}_muonSS.json.gz"
-    cset = correctionlib.CorrectionSet.from_file(str(json_path))
-
-    if hasattr(events, "genWeight"):
-        # MC: both scale correction to gen Z peak AND resolution correction to Z width in data
-        ptscalecorr = pt_scale(
-            False,
-            events.Muon.pt,
-            events.Muon.eta,
-            events.Muon.phi,
-            events.Muon.charge,
-            cset,
-            nested=True,
-        )
-        ptcorr = pt_resol(
-            ptscalecorr,
-            events.Muon.eta,
-            events.Muon.nTrackerLayers,
-            cset,
-            nested=True,
-        )
-    else:
-        # Data: only scale correction to gen Z peak
-        ptcorr = pt_scale(
-            True,
-            events.Muon.pt,
-            events.Muon.eta,
-            events.Muon.phi,
-            events.Muon.charge,
-            cset,
-            nested=True,
-        )
-    # update muon pT
-    events["Muon", "pt"] = ptcorr
-    # Propagate changes in muon pT to PuppiMET
-    met_pt, met_phi = corrected_polar_met(
-        met_pt=events.PuppiMET.pt_raw,
-        met_phi=events.PuppiMET.phi_raw,
-        other_phi=events.Muon.phi,
-        other_pt_old=events.Muon.pt_raw,
-        other_pt_new=events.Muon.pt,
-    )
-    events["PuppiMET", "pt"] = met_pt
-    events["PuppiMET", "phi"] = met_phi
 
 
 def apply_rochester_corrections_run2(events, year):
@@ -586,3 +534,153 @@ def apply_rochester_corrections_run2(events, year):
     events["MET"] = ak.with_field(
         events.MET, met_rochester_systematics, where="rochester"
     )
+
+def apply_rochester_corrections_run3(events: ak.Array, year: str):
+    # save original muon pT
+    events["Muon", "pt_raw"] = ak.ones_like(events.Muon.pt) * events.Muon.pt
+    events["PuppiMET", "pt_raw"] = ak.ones_like(events.PuppiMET.pt) * events.PuppiMET.pt
+    events["PuppiMET", "phi_raw"] = (
+        ak.ones_like(events.PuppiMET.phi) * events.PuppiMET.phi
+    )
+
+    # get correction set
+    json_path = Path.cwd() / "analysis" / "data" / f"{year}_muonSS.json.gz"
+    cset = correctionlib.CorrectionSet.from_file(str(json_path))
+
+    muons, counts, fields = events.Muon, ak.num(events.Muon), ak.fields(events.Muon)
+    out = ak.flatten(muons)
+    out_dict = dict({field: out[field] for field in fields})
+
+    if hasattr(events, "genWeight"):
+        ptscalecorr = pt_scale(
+            False,
+            events.Muon.pt,
+            events.Muon.eta,
+            events.Muon.phi,
+            events.Muon.charge,
+            cset,
+            nested=True,
+        )
+        ptcorr = pt_resol(
+            ptscalecorr,
+            events.Muon.eta,
+            events.Muon.nTrackerLayers,
+            cset,
+            nested=True,
+        )
+
+        ptscale_up = pt_scale_var(
+            ptcorr, events.Muon.eta, events.Muon.phi, events.Muon.charge, "up", cset, nested=True
+        )
+        ptscale_dn = pt_scale_var(
+            ptcorr, events.Muon.eta, events.Muon.phi, events.Muon.charge, "dn", cset, nested=True
+        )
+        ptresol_up = pt_resol_var(
+            ptscalecorr, ptcorr, events.Muon.eta, "up", cset, nested=True
+        )
+        ptresol_dn = pt_resol_var(
+            ptscalecorr, ptcorr, events.Muon.eta, "dn", cset, nested=True
+        )
+
+        out_dict["pt"] = ak.flatten(ptcorr)
+
+        mu_scale_up = ak.with_field(out, ak.flatten(ptscale_up), where="pt")
+        mu_scale_dn = ak.with_field(out, ak.flatten(ptscale_dn), where="pt")
+        mu_resol_up = ak.with_field(out, ak.flatten(ptresol_up), where="pt")
+        mu_resol_dn = ak.with_field(out, ak.flatten(ptresol_dn), where="pt")
+
+        out_dict["ptscalecorr"] = ak.zip(
+            {"up": mu_scale_up, "down": mu_scale_dn},
+            depth_limit=1,
+            with_name="RochesterSystematic",
+        )
+        out_dict["ptresolcorr"] = ak.zip(
+            {"up": mu_resol_up, "down": mu_resol_dn},
+            depth_limit=1,
+            with_name="RochesterSystematic",
+        )
+
+    else:
+        ptcorr = pt_scale(
+            True,
+            events.Muon.pt,
+            events.Muon.eta,
+            events.Muon.phi,
+            events.Muon.charge,
+            cset,
+            nested=True,
+        )
+        out_dict["pt"] = ak.flatten(ptcorr)
+
+    out_parms = out._layout.parameters
+    out = ak.zip(out_dict, depth_limit=1, parameters=out_parms, behavior=out.behavior)
+    events["Muon"] = ak.unflatten(out, counts)
+
+    met_pt, met_phi = corrected_polar_met(
+        met_pt=events.PuppiMET.pt_raw,
+        met_phi=events.PuppiMET.phi_raw,
+        other_phi=events.Muon.phi,
+        other_pt_old=events.Muon.pt_raw,
+        other_pt_new=events.Muon.pt,
+    )
+    events["PuppiMET", "pt"] = met_pt
+    events["PuppiMET", "phi"] = met_phi
+
+    if hasattr(events, "genWeight"):
+        met_sc_up_pt, met_sc_up_phi = corrected_polar_met(
+            events.PuppiMET.pt_raw,
+            events.PuppiMET.phi_raw,
+            events.Muon.phi,
+            events.Muon.pt_raw,
+            events.Muon.ptscalecorr.up.pt,
+        )
+        met_sc_dn_pt, met_sc_dn_phi = corrected_polar_met(
+            events.PuppiMET.pt_raw,
+            events.PuppiMET.phi_raw,
+            events.Muon.phi,
+            events.Muon.pt_raw,
+            events.Muon.ptscalecorr.down.pt,
+        )
+        met_sc_up = ak.with_field(events.PuppiMET, met_sc_up_pt, where="pt")
+        met_sc_up = ak.with_field(met_sc_up, met_sc_up_phi, where="phi")
+        met_sc_dn = ak.with_field(events.PuppiMET, met_sc_dn_pt, where="pt")
+        met_sc_dn = ak.with_field(met_sc_dn, met_sc_dn_phi, where="phi")
+
+        met_ptscalecorr = ak.zip(
+            {"up": met_sc_up, "down": met_sc_dn},
+            depth_limit=1,
+            with_name="METSystematic",
+        )
+
+        # --- RESOLUTION ---
+        met_res_up_pt, met_res_up_phi = corrected_polar_met(
+            events.PuppiMET.pt_raw,
+            events.PuppiMET.phi_raw,
+            events.Muon.phi,
+            events.Muon.pt_raw,
+            events.Muon.ptresolcorr.up.pt,
+        )
+        met_res_dn_pt, met_res_dn_phi = corrected_polar_met(
+            events.PuppiMET.pt_raw,
+            events.PuppiMET.phi_raw,
+            events.Muon.phi,
+            events.Muon.pt_raw,
+            events.Muon.ptresolcorr.down.pt,
+        )
+        met_res_up = ak.with_field(events.PuppiMET, met_res_up_pt, where="pt")
+        met_res_up = ak.with_field(met_res_up, met_res_up_phi, where="phi")
+        met_res_dn = ak.with_field(events.PuppiMET, met_res_dn_pt, where="pt")
+        met_res_dn = ak.with_field(met_res_dn, met_res_dn_phi, where="phi")
+
+        met_ptresolcorr = ak.zip(
+            {"up": met_res_up, "down": met_res_dn},
+            depth_limit=1,
+            with_name="METSystematic",
+        )
+
+        events["PuppiMET"] = ak.with_field(
+            events.PuppiMET, met_ptscalecorr, where="ptscalecorr"
+        )
+        events["PuppiMET"] = ak.with_field(
+            events.PuppiMET, met_ptresolcorr, where="ptresolcorr"
+        )

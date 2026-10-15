@@ -101,10 +101,10 @@ corrections:
       - id: tight
     btagging: false
     muon:
-      - id: false
-      - iso: false
+      - id: tight
+      - iso: tight
       - reco: true
-      - trigger: false
+      - trigger: true
     electron: false
     tau: false
 histogram_config:

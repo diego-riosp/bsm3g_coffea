@@ -29,8 +29,9 @@ def add_pileup_weight(
     https://cms-nanoaod-integration.web.cern.ch/commonJSONSFs/summaries/LUM_2017_UL_puWeights.html
     """
     # define correction set and goldenJSON file names
+    pileup_2024 = "/cvmfs/cms-griddata.cern.ch/cat/metadata/LUM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest/puWeights_CDEFGHI.json.gz"
     cset = correctionlib.CorrectionSet.from_file(
-        get_pog_json(json_name="pileup", year=year)
+        get_pog_json(json_name="pileup", year=year) if year!="2024" else pileup_2024
     )
     year_to_corr = {
         "2016preVFP": "Collisions16_UltraLegacy_goldenJSON",
@@ -41,6 +42,7 @@ def add_pileup_weight(
         "2022postEE": "Collisions2022_359022_362760_eraEFG_GoldenJson",
         "2023preBPix": "Collisions2023_366403_369802_eraBC_GoldenJson",
         "2023postBPix": "Collisions2023_369803_370790_eraD_GoldenJson",
+        "2024": "Collisions24_CDEFGHI_goldenJSON",
     }
     # get number of true interactions
     nti = events.Pileup.nTrueInt

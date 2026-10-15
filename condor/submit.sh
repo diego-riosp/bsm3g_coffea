@@ -8,10 +8,10 @@ X509PATH=$3
 export XRD_NETWORKSTACK=IPv4
 export XRD_RUNFORKHANDLER=1
 export X509_USER_PROXY=$X509PATH
-export XRD_REQUESTTIMEOUT=300
-export XRD_STREAMTIMEOUT=300
-export XRD_CONNECTIONTIMEOUT=60
-export XRD_CONNECTIONRETRY=5
+#export XRD_REQUESTTIMEOUT=300
+#export XRD_STREAMTIMEOUT=300
+#export XRD_CONNECTIONTIMEOUT=60
+#export XRD_CONNECTIONRETRY=5
 
 # Print proxy certificate details to verify validity and VOMS attributes
 voms-proxy-info -all -file $X509PATH
@@ -22,13 +22,17 @@ WORKDIR=`pwd`
 # Declare an associative array (dictionary) to hold job parameters
 declare -A ARGS
 
-# Extract specific job parameters from arguments.json
-for key in workflow year output_path output_format dataset; do
-    ARGS[$key]=$(python3 -c "import json; print(json.load(open('$WORKDIR/arguments.json'))['$key'])")
+
+for key in workflow year output_path output_format dataset workers skipbadfiles; do
+    ARGS[$key]=$(python3 -c "import json; print(json.load(open('$WORKDIR/arguments.json')).get('$key', ''))")
 done
 
 # Build the full set of command-line parameters for submit.py (Add the JOBID suffix to the dataset name to uniquely identify the output)
-CMD_ARGS="--workflow ${ARGS[workflow]} --year ${ARGS[year]} --output_path ${ARGS[output_path]} --output_format ${ARGS[output_format]} --dataset ${ARGS[dataset]}_$JOBID"
+CMD_ARGS="--workflow ${ARGS[workflow]} --year ${ARGS[year]} --output_path ${ARGS[output_path]} --output_format ${ARGS[output_format]} --dataset ${ARGS[dataset]}_$JOBID --workers=${ARGS[workers]}"
+
+if [ "${ARGS[skipbadfiles]}" = "True" ] || [ "${ARGS[skipbadfiles]}" = "true" ]; then
+    CMD_ARGS="$CMD_ARGS --skipbadfiles"
+fi
 
 # From partitions.json (which contains the partitioning of the full dataset across jobs),
 # extract only the subset assigned to the current JOBID and save it as partition_fileset.json.

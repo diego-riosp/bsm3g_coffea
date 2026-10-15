@@ -6,29 +6,38 @@ from coffea.util import save
 from coffea.nanoevents import NanoAODSchema
 from analysis.utils import write_root
 from analysis.processors.base import BaseProcessor
+from coffea.dataset_tools import preprocess
 
 
 def main(args):
     with open(args.partition_json) as f:
         partition_fileset = json.load(f)
     # Configure the Runner using coffea 2024+ API
+
+    preprocessed_partition_fileset, _ = preprocess(
+        partition_fileset,
+        align_clusters = True,
+        #step_size = 100_000,
+        skip_bad_files = args.skipbadfiles,
+    )
+
     futures_run = processor.Runner(
-        executor=processor.FuturesExecutor(workers=args.workers, compression=None, retries=6),
+        executor=processor.FuturesExecutor(workers=args.workers, compression=None, retries=1),
         schema=NanoAODSchema,
-        chunksize=100000,
-        savemetrics=False,
-        xrootdtimeout=120,
-        align_clusters=True,
-        skipbadfiles=True
+        #chunksize=100000,
+        savemetrics=True,
+        #xrootdtimeout=120,
     )
     # Execute processing job using the Runner instance
-    out = futures_run(
-        partition_fileset,
+    out, metrics = futures_run(
+        preprocessed_partition_fileset,
         treename="Events",
         processor_instance=BaseProcessor(
             workflow=args.workflow, year=args.year, mode="virtual"
         ),
     )
+    del metrics["columns"]
+    out["metrics"] = metrics
     savepath = f"{args.output_path}/{args.dataset}"
     if args.output_format == "coffea":
         save(out, f"{savepath}.coffea")
@@ -100,8 +109,14 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--global",
+        dest="use_global",
         action="store_true",
         help="send xrd-cms-global partition filesets",
+    )
+    parser.add_argument(
+        "--skipbadfiles",
+        action="store_true",
+        help="skip root files with errors",
     )
     args = parser.parse_args()
     main(args)

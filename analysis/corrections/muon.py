@@ -66,10 +66,10 @@ class MuonCorrector:
             "2022preEE": "2022",
             "2022postEE": "2022",
             "2023preBPix": "2023",
-            "2023postBPix": "2023",
+            "2023postBPix": "2023"
         }
         self.year_key = year_key_map.get(year, year)
-        self.run_key = "Run3" if self.year_key in ["2022", "2023"] else "Run2"
+        self.run_key = "Run3" if self.year_key in ["2022", "2023"] or year == "2024" else "Run2"
 
     def add_reco_weight(self):
         """
@@ -308,6 +308,7 @@ class MuonCorrector:
             "2022postEE": "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
             "2023preBPix": "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
             "2023postBPix": "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+            "2024": "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
         }
         if self.variation == "nominal":
             if kind == "single":

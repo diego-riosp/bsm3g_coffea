@@ -101,9 +101,9 @@ corrections:
       - id: tight
     btagging: false
     electron:
-      - id: false
+      - id: wp80iso
       - reco: true
-      - trigger: false
+      - trigger: true
     muon: false
     tau: false
 histogram_config:

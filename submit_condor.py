@@ -51,7 +51,7 @@ def submit_condor(args):
         log_dir.mkdir(parents=True, exist_ok=True)
 
     # check if the fileset for the given year exists, generate it otherwise
-    fileset_checker(year=args.year, samples=[args.dataset])
+    fileset_checker(year=args.year, samples=[args.dataset], discovery=args.discovery)
     # save partitions json and jobnums to job directory
     jobnum_list = []
     partition_dataset = {}
@@ -86,11 +86,11 @@ def submit_condor(args):
     with open(f"{partition_file}", "w") as json_file:
         json.dump(partition_dataset, json_file, indent=4)
 
-    if getattr(args,"global"):
+    if args.use_global:
         subprocess.run(f"sed -i -E 's#root://.*/store/#root://cms-xrd-global.cern.ch//store/#g' {partition_file}",shell=True)
 
     jobnum_file = job_dir / "jobnum.txt"
-    with open(f"{jobnum_file}", "w") as f:
+    with open(f"{jobnum_file}", "w") as f:# 3. Agrega la bandera si skipbadfiles es true (maneja booleano JSON 'True' o string 'true')
         print(*jobnum_list, sep="\n", file=f)
 
     # build and save arguments json
@@ -205,8 +205,31 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--global",
+        dest="use_global",
         action="store_true",
         help="send xrd-cms-global partition filesets",
     )
+    parser.add_argument(
+        "--skipbadfiles",
+        action="store_true",
+        help="skip root files with errors",
+    )
+    # Mutually exclusive group for dataset discovery strategy
+    discovery_group = parser.add_mutually_exclusive_group()
+    discovery_group.add_argument(
+        "--das",
+        dest="discovery",
+        action="store_const",
+        const="das",
+        help="Use dasgoclient for dataset discovery (Default).",
+    )
+    discovery_group.add_argument(
+        "--rucio",
+        dest="discovery",
+        action="store_const",
+        const="rucio",
+        help="Use DataDiscoveryCLI (Rucio) for dataset discovery.",
+    )
+    parser.set_defaults(discovery="rucio")
     args = parser.parse_args()
     submit_condor(args)

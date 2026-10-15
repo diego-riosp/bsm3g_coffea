@@ -113,8 +113,8 @@ corrections:
       - light: true
       - full_run: true
     muon:
-      - id: false
-      - iso: false
+      - id: tight
+      - iso: tight
       - reco: true
       - trigger: true
     electron: false

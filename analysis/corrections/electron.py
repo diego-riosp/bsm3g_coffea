@@ -59,7 +59,7 @@ class ElectronCorrector:
             "2023postBPix": "2023",
         }
         self.year_key = year_key_map.get(year, year)
-        self.run_key = "Run3" if self.year_key in ["2022", "2023"] else "Run2"
+        self.run_key = "Run3" if self.year_key.startswith("202") else "Run2"
 
         # set id working points map
         self.id_map = {
@@ -82,6 +82,7 @@ class ElectronCorrector:
             "2022preEE": "2022Re-recoBCD",
             "2023preBPix": "2023PromptC",
             "2023postBPix": "2023PromptD",
+            "2024": "2024"
         }
 
     def add_id_weight(self, id_working_point: str) -> None:
@@ -107,7 +108,7 @@ class ElectronCorrector:
 
         # get nominal scale factors
         cset_args = [
-            self.year_map[self.year],
+            self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
             "sf",
             self.id_map[id_working_point],
             electron_eta,
@@ -125,14 +126,14 @@ class ElectronCorrector:
         if self.variation == "nominal":
             # get 'up' and 'down' scale factors
             cset_args_up = [
-                self.year_map[self.year],
+                self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
                 "sfup",
                 self.id_map[id_working_point],
                 electron_eta,
                 electron_pt,
             ]
             cset_args_down = [
-                self.year_map[self.year],
+                self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
                 "sfdown",
                 self.id_map[id_working_point],
                 electron_eta,
@@ -209,7 +210,7 @@ class ElectronCorrector:
 
         # get nominal scale factors
         cset_args = [
-            self.year_map[self.year],
+            self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
             "sf",
             reco,
             electron_eta,
@@ -227,14 +228,14 @@ class ElectronCorrector:
         if self.variation == "nominal":
             # get 'up' and 'down' scale factors
             cset_args_up = [
-                self.year_map[self.year],
+                self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
                 "sfup",
                 reco,
                 electron_eta,
                 electron_pt,
             ]
             cset_args_down = [
-                self.year_map[self.year],
+                self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
                 "sfdown",
                 reco,
                 electron_eta,
@@ -273,9 +274,8 @@ class ElectronCorrector:
         """
         # get electron correction set
         assert (
-            id_wp == "wp80iso"
-        ), "there's only available muon trigger SF for 'wp80iso' ID"
-
+            id_wp == "wp80iso" or id_wp == "loose"
+        ), "there's only available electron trigger SF for 'wp80iso' (Run2) and 'wp80iso','loose' (Run3)"
         run2_hlt_paths = {
             "2016preVFP": "Ele27_WPTight_Gsf_OR_Photon175",
             "2016postVFP": "Ele27_WPTight_Gsf_OR_Photon175",
@@ -285,7 +285,9 @@ class ElectronCorrector:
         hlt_path_id_map = {
             "wp80iso": "HLT_SF_Ele30_MVAiso80ID",
             "wp90iso": "HLT_SF_Ele30_MVAiso90ID",
+            "loose": "HLT_SF_Ele30_LooseID",
         }
+
         # get electrons within SF binning
         if self.run_key == "Run3":
             in_electrons_mask = self.flat_electrons.pt > 25.0
@@ -325,7 +327,7 @@ class ElectronCorrector:
                     get_pog_json(json_name="electron_hlt", year=self.year)
                 )
                 sf = cset["Electron-HLT-SF"].evaluate(
-                    self.year_map[self.year],
+                    self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
                     "sf",
                     hlt_path_id_map[id_wp],
                     electron_eta,
@@ -354,7 +356,7 @@ class ElectronCorrector:
                     get_pog_json(json_name="electron_hlt", year=self.year)
                 )
                 data_eff = cset["Electron-HLT-DataEff"].evaluate(
-                    self.year_map[self.year],
+                    self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
                     "nom",
                     hlt_path_id_map[id_wp],
                     electron_eta,
@@ -372,7 +374,7 @@ class ElectronCorrector:
                 full_data_eff = ak.fill_none(full_data_eff, 1)
 
                 mc_eff = cset["Electron-HLT-McEff"].evaluate(
-                    self.year_map[self.year],
+                    self.year_map[self.year] if self.year != "2024" else self.year_map[self.year]+"Prompt",
                     "nom",
                     hlt_path_id_map[id_wp],
                     electron_eta,

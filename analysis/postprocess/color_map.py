@@ -34,11 +34,19 @@ def get_framework_processes():
     for ff in filesets_files:
         with open(ff, "r") as f:
             fileset_info = yaml.safe_load(f)
-        for name in fileset_info:
-            process = fileset_info[name]["process"]
-            if process != "Data":
-                if process not in processes:
-                    processes.append(process)
+        
+        if isinstance(fileset_info, dict):
+            for name, info in fileset_info.items():
+                if isinstance(info, dict) and "process" in info:
+                    process = info["process"]
+                    if process != "Data" and process not in processes:
+                        processes.append(process)
+        elif isinstance(fileset_info, list):
+            for item in fileset_info:
+                if isinstance(item, dict) and "process" in item:
+                    process = item["process"]
+                    if process != "Data" and process not in processes:
+                        processes.append(process)
     return processes
 
 

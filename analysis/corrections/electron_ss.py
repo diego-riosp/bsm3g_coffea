@@ -1,97 +1,163 @@
 import correctionlib
 import numpy as np
 import awkward as ak
-from pathlib import Path
 from analysis.corrections.met import corrected_polar_met
 
 
-def filter_boundaries(pt_corr, pt, nested=True):
-    if not nested:
-        pt_corr = np.asarray(pt_corr)
-        pt = np.asarray(pt)
+# Official CVMFS repository mapping per year/campaign
+REPO_DICT = {
+    "2026": "Run3-26Prompt-Summer24-NanoAODv15",
+    "2025": "Run3-25Prompt-Summer24-NanoAODv15",
+    "2024": "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15",
+    "2023": "Run3-23CSep23-Summer23-NanoAODv12",
+    "2023preBPix": "Run3-23CSep23-Summer23-NanoAODv12",
+    "2023postBPix": "Run3-23DSep23-Summer23BPix-NanoAODv12",
+    "2022": "Run3-22CDSep23-Summer22-NanoAODv12",
+    "2022preEE": "Run3-22CDSep23-Summer22-NanoAODv12",
+    "2022postEE": "Run3-22EFGSep23-Summer22EE-NanoAODv12",
+    "2018": "Run2-2018-UL-NanoAODv15",
+    "2017": "Run2-2017-UL-NanoAODv15",
+    "2016postVFP": "Run2-2016postVFP-UL-NanoAODv15",
+    "2016preVFP": "Run2-2016preVFP-UL-NanoAODv15",
+}
 
-    # Check for pt values outside the range
-    outside_bounds = (pt < 20) | (pt > 250)
 
-    if nested:
-        n_pt_outside = ak.sum(ak.any(outside_bounds, axis=-1))
-    else:
-        n_pt_outside = np.sum(outside_bounds)
-
-    if n_pt_outside > 0:
-        #print(
-        #    f"There are {n_pt_outside} events with muon pt outside of [26,200] GeV. "
-        #    "Setting those entries to their initial value."
-        #)
-        pt_corr = np.where(pt > 250, pt, pt_corr)
-        pt_corr = np.where(pt < 20, pt, pt_corr)
-
-    # Check for NaN entries in pt_corr
-    nan_entries = np.isnan(pt_corr)
-
-    if nested:
-        n_nan = ak.sum(ak.any(nan_entries, axis=-1))
-    else:
-        n_nan = np.sum(nan_entries)
-
-    if n_nan > 0:
-        #print(
-        #    f"There are {n_nan} nan entries in the corrected pt. "
-        #    "This might be due to the number of tracker layers hitting boundaries. "
-        #    "Setting those entries to their initial value."
-        #)
-        pt_corr = np.where(np.isnan(pt_corr), pt, pt_corr)
-
+def filter_boundaries(pt_corr, pt):
+    """
+    Filters out-of-bounds ([10, 500] GeV) or NaN values produced by the corrector,
+    replacing them with the uncorrected (raw) pT.
+    """
+    outside_bounds = (pt < 10) | (pt > 500)
+    pt_corr = ak.where(outside_bounds, pt, pt_corr)
+    pt_corr = ak.where(np.isnan(pt_corr), pt, pt_corr)
     return pt_corr
 
 
 def apply_electron_ss_corrections(
     events: ak.Array,
     year: str,
+    seed: int = 42,
+    obj_type: str = "Ele",
 ):
-    json_path = (
-        Path.cwd() / "analysis" / "data" / f"{year}_electronSS_EtDependent.json.gz"
-    )
-    cset = correctionlib.CorrectionSet.from_file(str(json_path))
-    year_map = {
-        "2023preBPix": "2023preBPIX",
-        "2023postBPix": "2023postBPIX",
-    }
-    scale_evaluator = cset.compound[f"EGMScale_Compound_Ele_{year_map.get(year, year)}"]
-    smear_evaluator = cset[f"EGMSmearAndSyst_ElePTsplit_{year_map.get(year, year)}"]
-
-    events["Electron", "pt_raw"] = ak.ones_like(events.Electron.pt) * events.Electron.pt
-    events["PuppiMET", "pt_raw"] = ak.ones_like(events.PuppiMET.pt) * events.PuppiMET.pt
-    events["PuppiMET", "phi_raw"] = (
-        ak.ones_like(events.PuppiMET.phi) * events.PuppiMET.phi
-    )
-
-    electrons = ak.flatten(events.Electron)
-    counts = ak.num(events.Electron)
-    gain = electrons.seedGain
-    run = np.repeat(events.run, counts)
-    eta = electrons.eta + electrons.deltaEtaSC
-    abseta = np.abs(eta)
-    r9 = electrons.r9
-    pt = electrons.pt_raw
-
-    if hasattr(events, "genWeight"):
-        smear = smear_evaluator.evaluate("smear", pt, r9, abseta)
-        rng = np.random.default_rng(seed=42)
-        random_numbers = rng.normal(loc=0.0, scale=1.0, size=len(pt))
-        correction_factor = 1 + smear * random_numbers
-    else:
-        correction_factor = scale_evaluator.evaluate(
-            "scale", run, eta, r9, abseta, pt, gain
+    if year not in REPO_DICT:
+        raise KeyError(
+            f"Year '{year}' is not mapped in REPO_DICT for CVMFS. "
+            f"Available options: {list(REPO_DICT.keys())}"
         )
 
-    ele_pt = ak.unflatten(electrons.pt_raw, counts)
-    ele_pt_corr = ak.unflatten(electrons.pt_raw * correction_factor, counts)
-    corrected_pt = filter_boundaries(ele_pt_corr, ele_pt)
+    # 1. Build CVMFS path following EGM POG standard conventions
+    subfolder = "electron" if obj_type == "Ele" else "photon"
+    json_path = f"/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/{REPO_DICT[year]}/latest/{subfolder}SS_EtDependent.json.gz"
 
-    events["Electron", "pt"] = corrected_pt
+    cset = correctionlib.CorrectionSet.from_file(json_path)
 
-    # Propagate changes in muon pT to PuppiMET
+    # Standard evaluators in official CVMFS JSONs
+    scale_evaluator = cset.compound["Scale"]
+    smear_evaluator = cset["SmearAndSyst"]
+
+    # 2. Store raw variables
+    events["Electron", "pt_raw"] = events.Electron.pt
+    events["PuppiMET", "pt_raw"] = events.PuppiMET.pt
+    events["PuppiMET", "phi_raw"] = events.PuppiMET.phi
+
+    # 3. Prepare electron variables
+    electrons = events.Electron
+    counts = ak.num(electrons)
+
+    # Flatten collections for clean vectorized calls with correctionlib
+    flat_pt = ak.flatten(electrons.pt_raw)
+    flat_r9 = ak.flatten(electrons.r9)
+    # Supercluster Eta = eta + deltaEtaSC
+    flat_sc_eta = ak.flatten(electrons.eta + electrons.deltaEtaSC)
+    flat_gain = ak.flatten(electrons.seedGain)
+    flat_run = ak.flatten(ak.broadcast_arrays(events.run, electrons.pt_raw)[0])
+
+    is_mc = hasattr(events, "genWeight")
+
+    if is_mc:
+        # --- MC: SMEARING AND SYSTEMATICS ---
+        # Smearing width evaluator: ("smear", pt, r9, ScEta)
+        smear_width = smear_evaluator.evaluate(
+            "smear",
+            ak.to_numpy(flat_pt),
+            ak.to_numpy(flat_r9),
+            ak.to_numpy(flat_sc_eta),
+        )
+
+        # Stochastic Gaussian random number generator N(0,1)
+        rng = np.random.default_rng(seed=seed)
+        random_numbers = rng.normal(loc=0.0, scale=1.0, size=len(flat_pt))
+
+        # Nominal smearing
+        smearing_factor = 1.0 + smear_width * random_numbers
+        flat_pt_corrected = flat_pt * smearing_factor
+
+        # Smearing uncertainties (Up / Down)
+        smear_up = smear_evaluator.evaluate(
+            "smear_up",
+            ak.to_numpy(flat_pt),
+            ak.to_numpy(flat_r9),
+            ak.to_numpy(flat_sc_eta),
+        )
+        smear_down = smear_evaluator.evaluate(
+            "smear_down",
+            ak.to_numpy(flat_pt),
+            ak.to_numpy(flat_r9),
+            ak.to_numpy(flat_sc_eta),
+        )
+
+        # Prevent unphysical negative smearing widths
+        smear_down = np.maximum(smear_down, 0.0)
+
+        smearing_up = 1.0 + smear_up * random_numbers
+        smearing_down = 1.0 + smear_down * random_numbers
+
+        # Scale uncertainties (Up / Down in MC applied on top of smeared pT)
+        scale_up = smear_evaluator.evaluate(
+            "scale_up",
+            ak.to_numpy(flat_pt),
+            ak.to_numpy(flat_r9),
+            ak.to_numpy(flat_sc_eta),
+        )
+        scale_down = smear_evaluator.evaluate(
+            "scale_down",
+            ak.to_numpy(flat_pt),
+            ak.to_numpy(flat_r9),
+            ak.to_numpy(flat_sc_eta),
+        )
+
+        # Unflatten back to nested Awkward array structures
+        pt_corr = ak.unflatten(flat_pt_corrected, counts)
+        pt_smear_up = ak.unflatten(flat_pt * smearing_up, counts)
+        pt_smear_dn = ak.unflatten(flat_pt * smearing_down, counts)
+        pt_scale_up = ak.unflatten(scale_up * flat_pt_corrected, counts)
+        pt_scale_dn = ak.unflatten(scale_down * flat_pt_corrected, counts)
+
+        # Apply boundary checks and store variations in events
+        events["Electron", "pt"] = filter_boundaries(pt_corr, events.Electron.pt_raw)
+        events["Electron", "pt_smear_up"] = filter_boundaries(pt_smear_up, events.Electron.pt_raw)
+        events["Electron", "pt_smear_down"] = filter_boundaries(pt_smear_dn, events.Electron.pt_raw)
+        events["Electron", "pt_scale_up"] = filter_boundaries(pt_scale_up, events.Electron.pt_raw)
+        events["Electron", "pt_scale_down"] = filter_boundaries(pt_scale_dn, events.Electron.pt_raw)
+
+    else:
+        # --- DATA: SCALE CORRECTION ---
+        # Scale evaluator: ("scale", run, ScEta, r9, pt, seedGain)
+        scale_factor = scale_evaluator.evaluate(
+            "scale",
+            ak.to_numpy(flat_run),
+            ak.to_numpy(flat_sc_eta),
+            ak.to_numpy(flat_r9),
+            ak.to_numpy(flat_pt),
+            ak.to_numpy(flat_gain),
+        )
+
+        flat_pt_corrected = scale_factor * flat_pt
+        pt_corr = ak.unflatten(flat_pt_corrected, counts)
+
+        events["Electron", "pt"] = filter_boundaries(pt_corr, events.Electron.pt_raw)
+
+    # 4. Propagate corrections to PuppiMET (nominal)
     met_pt, met_phi = corrected_polar_met(
         met_pt=events.PuppiMET.pt_raw,
         met_phi=events.PuppiMET.phi_raw,

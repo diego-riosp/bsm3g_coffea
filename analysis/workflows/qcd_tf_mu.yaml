@@ -107,7 +107,7 @@ event_selection:
       - electron_veto
       - tau_veto
       - subleading_loose_dimuon
-    1T1L:
+    1T1LnT:
       - goodvertex
       - lumi
       - trigger
@@ -143,7 +143,7 @@ corrections:
       - id: tight
       - iso: tight
       - reco: true
-      - trigger: false
+      - trigger: true
     electron: false
     tau: false
 histogram_config:

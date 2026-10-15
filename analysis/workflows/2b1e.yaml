@@ -104,7 +104,7 @@ corrections:
     - muons
     - taus
     - met
-  apply_obj_syst: true
+  apply_obj_syst: false
   event_weights:
     genWeight: true
     pileupWeight: true
@@ -316,6 +316,67 @@ histogram_config:
       stop: 10
       label: $|\Delta \phi(e, p_T^{\text{miss}})|$
       expression: np.abs(objects['electrons'].phi - objects['met'].phi)
+    inv_mass_tot_e_2b_met:
+      type: Variable
+      edges:
+        - 100
+        - 150
+        - 200
+        - 250
+        - 300
+        - 350
+        - 400
+        - 500
+        - 600
+        - 800
+        - 1000
+        - 1500
+      label: $m_T^{\text{tot}}(e, b_1, b_2, p_T^{\text{miss}})$ [GeV]
+      expression: np.sqrt((objects['electrons'].pt + ak.pad_none(objects['bjets'].pt, target=2)[:, 0] + ak.pad_none(objects['bjets'].pt, target=2)[:, 1] + objects['met'].pt)**2 - ((objects['electrons'].px + ak.pad_none(objects['bjets'].px, target=2)[:, 0] + ak.pad_none(objects['bjets'].px, target=2)[:, 1] + objects['met'].px)**2 + (objects['electrons'].py + ak.pad_none(objects['bjets'].py, target=2)[:, 0] + ak.pad_none(objects['bjets'].py, target=2)[:, 1] + objects['met'].py)**2))
+    met_recalculated:
+      type: Variable
+      edges:
+        - 50
+        - 75
+        - 100
+        - 125
+        - 150
+        - 175
+        - 200
+        - 300
+        - 500
+      label: $p_T^{\text{miss, new}}$ [GeV]
+      expression: np.hypot(objects['met'].px + ak.pad_none(objects['bjets'].px, target=2)[:, 1], objects['met'].py + ak.pad_none(objects['bjets'].py, target=2)[:, 1])
+    electron_met_mass_recalculated:
+      type: Variable
+      edges:
+        - 40
+        - 75
+        - 100
+        - 125
+        - 150
+        - 175
+        - 200
+        - 300
+        - 500
+        - 800
+      label: $m_T(e, p_T^{\text{miss, new}})$ [GeV]
+      expression: np.sqrt(2.0 * objects['electrons'].pt * np.hypot(objects['met'].px + ak.pad_none(objects['bjets'].px, target=2)[:, 1], objects['met'].py + ak.pad_none(objects['bjets'].py, target=2)[:, 1]) * (ak.ones_like(objects['met'].pt) - np.cos(objects['electrons'].phi - np.arctan2(objects['met'].py + ak.pad_none(objects['bjets'].py, target=2)[:, 1], objects['met'].px + ak.pad_none(objects['bjets'].px, target=2)[:, 1]))))
+    electron_met_bjet_mass_recalculated:
+      type: Variable
+      edges:
+        - 40
+        - 75
+        - 100
+        - 125
+        - 150
+        - 175
+        - 200
+        - 300
+        - 500
+        - 800
+      label: $m_T^{tot}(e, p_T^{\text{miss, new}}, \text{Leading b-jet})$ [GeV]
+      expression: np.sqrt((objects['electrons'].pt + ak.pad_none(objects['bjets'].pt, target=2)[:, 0] + np.hypot(objects['met'].px + ak.pad_none(objects['bjets'].px, target=2)[:, 1], objects['met'].py + ak.pad_none(objects['bjets'].py, target=2)[:, 1]))**2 - ((objects['electrons'].px + ak.pad_none(objects['bjets'].px, target=2)[:, 0] + objects['met'].px + ak.pad_none(objects['bjets'].px, target=2)[:, 1])**2 + (objects['electrons'].py + ak.pad_none(objects['bjets'].py, target=2)[:, 0] + objects['met'].py + ak.pad_none(objects['bjets'].py, target=2)[:, 1])**2))
   layout:
     vertex_multiplicity:
       - vertex_multiplicity
@@ -329,7 +390,12 @@ histogram_config:
       - electron_met_bjet_mass
       - electron_bjet_mass
       - electron_met_mass
+      - inv_mass_tot_e_2b_met
       - met
+    mass_recalculated:
+      - electron_met_bjet_mass_recalculated
+      - electron_met_mass_recalculated
+      - met_recalculated
     electrons:
       - electron_pt
       - electron_eta
