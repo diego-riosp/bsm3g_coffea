@@ -5,7 +5,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-def discover_with_das(das_query: str, redirector: str = "root://cms-xrd-global.cern.ch/") -> dict:
+def discover_with_das(das_query: str, redirector: str = "root://cms-xrd-global.cern.ch//") -> dict:
     """Queries dataset files using dasgoclient."""
     # Ensure the query has the required /PRIMARY/PROCESSED/TIER syntax
     formatted_query = f"/{das_query.strip('/')}"
@@ -33,7 +33,7 @@ def discover_with_das(das_query: str, redirector: str = "root://cms-xrd-global.c
         if path:
             # Build the full XRootD URL
             clean_path = path if not path.startswith("/") else path[1:]
-            full_path = f"{redirector}{clean_path}"
+            full_path = f"{redirector}/{clean_path}"
             
             # Exact format expected by Coffea: { "url_to_file.root": "Events" }
             files_dict[full_path] = "Events"
