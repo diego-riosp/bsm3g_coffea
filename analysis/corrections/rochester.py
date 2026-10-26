@@ -205,10 +205,10 @@ def filter_boundaries(pt_corr, pt, nested):
         n_pt_outside = np.sum(outside_bounds)
 
     if n_pt_outside > 0:
-        print(
-            f"There are {n_pt_outside} events with muon pt outside of [26,200] GeV. "
-            "Setting those entries to their initial value."
-        )
+        #print(
+        #    f"There are {n_pt_outside} events with muon pt outside of [26,200] GeV. "
+        #    "Setting those entries to their initial value."
+        #)
         pt_corr = np.where(pt > 200, pt, pt_corr)
         pt_corr = np.where(pt < 26, pt, pt_corr)
 
@@ -221,11 +221,11 @@ def filter_boundaries(pt_corr, pt, nested):
         n_nan = np.sum(nan_entries)
 
     if n_nan > 0:
-        print(
-            f"There are {n_nan} nan entries in the corrected pt. "
-            "This might be due to the number of tracker layers hitting boundaries. "
-            "Setting those entries to their initial value."
-        )
+        #print(
+        #    f"There are {n_nan} nan entries in the corrected pt. "
+        #    "This might be due to the number of tracker layers hitting boundaries. "
+        #    "Setting those entries to their initial value."
+        #)
         pt_corr = np.where(np.isnan(pt_corr), pt, pt_corr)
 
     return pt_corr

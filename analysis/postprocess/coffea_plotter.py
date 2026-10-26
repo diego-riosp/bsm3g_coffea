@@ -16,6 +16,7 @@ from analysis.postprocess.utils import (
     setup_logger,
     divide_by_binwidth,
     get_variations_keys,
+    apply_cms_text_patch,
 )
 
 np.seterr(invalid="ignore")
@@ -262,6 +263,7 @@ class CoffeaPlotter:
         extension: str = "png",
         blind: bool = False,
     ):
+        apply_cms_text_patch()
         setup_logger(self.output_dir)
         # set plot params
         hep.style.use("CMS")
@@ -416,24 +418,18 @@ class CoffeaPlotter:
             if (self.year.startswith("202"))
             else "run2"
         )
-                
+
+        lumi_val = f"{self.luminosities[self.year] * 1e-3:.1f}"
+        com_val = "13" if run_key == "run2" else "13.6"
         hep.cms.label(
-            ax=ax,
-            lumi=round(self.luminosities[self.year] * 1e-3, 1),
-            com=energy[run_key].split()[0],
+            "Preliminary",
             data=True,
-            year=self.year
-        )
-
-        ax.text(
-            0.1, 1.00,
-            r"$\mathit{Preliminary}$", 
-            verticalalignment="bottom", 
-            horizontalalignment="left", 
-            transform=ax.transAxes, 
-            fontsize=18
-        )
-
+            lumi=lumi_val,
+            com=com_val,
+            year=self.year,
+            ax=ax,
+            fontsize=16
+        ) 
         # save histograms
         output_path = Path(f"{self.output_dir}/{category}")
         if not output_path.exists():

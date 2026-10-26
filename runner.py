@@ -69,9 +69,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "-m",
         "--memory",
-        type=str,
-        default="4000",
+        type=int,
+        default=4000,
         help="Requested memory (in MB) for the condor job",
+    )
+    parser.add_argument(
+        "-c",
+        "--cpus",
+        type=int,
+        default=4,
+        help="Requested cpus for the condor job",
     )
     parser.add_argument(
         "--workers",
@@ -126,7 +133,9 @@ if __name__ == "__main__":
             "--output_format",
             args.output_format,
             "--memory",
-            args.memory,
+            str(args.memory),
+            "--cpus",
+            str(args.cpus),
             "--workers",
             str(args.workers)
         ]

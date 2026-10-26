@@ -8,6 +8,7 @@ from .data import (
     run_ttbar_estimation,
     run_sr_ttbar_correction,
     run_ttbar_sr_poly_correction,
+    run_systematic_comparison,
 )
 from .plotting import (
     apply_cms_text_patch,
@@ -16,6 +17,7 @@ from .plotting import (
     plot_qcd_panel,
     CoffeaPlotter,
     plot_sr_corrected_panel,
+    plot_syst_panel,
 )
 from .tables import (
     fmt_sci,
@@ -31,6 +33,8 @@ from .tables import (
     generate_qcd_tf_tables_and_pngs,
     generate_latex_table_qcd_cr,
     generate_qcd_cr_tables_and_pngs,
+    generate_latex_table_syst_diff,
+    generate_systematic_diff_tables_and_pngs,
 )
 
 __all__ = [
@@ -64,4 +68,8 @@ __all__ = [
     "generate_qcd_tf_tables_and_pngs",
     "generate_latex_table_qcd_cr",
     "generate_qcd_cr_tables_and_pngs",
+    "plot_syst_panel",
+    "run_systematic_comparison",
+    "generate_latex_table_syst_diff",
+    "generate_systematic_diff_tables_and_pngs",
 ]

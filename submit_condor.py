@@ -114,7 +114,8 @@ def submit_condor(args):
                 "INPUTFILES", f"{partition_file},{jobnum_file},{args_file}"
             )
             line = line.replace("JOBNUM_FILE", str(jobnum_file))
-            line = line.replace("MEMORY", args.memory)
+            line = line.replace("MEMORY", str(args.memory))
+            line = line.replace("CPUS", str(args.cpus))
             condor_file.write(line)
 
     if args.submit:
@@ -192,9 +193,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "-m",
         "--memory",
-        type=str,
-        default="4000",
+        type=int,
+        default=4000,
         help="Requested memory (in MB) for the condor job",
+    )
+    parser.add_argument(
+        "-c",
+        "--cpus",
+        type=int,
+        default=4,
+        help="Requested cpus for the condor job",
     )
     parser.add_argument(
         "--workers",

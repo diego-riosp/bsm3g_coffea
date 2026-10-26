@@ -1,10 +1,12 @@
 import os
 import glob
+import hist
 import pickle
 import logging
 import numpy as np
 import pandas as pd
 from coffea.processor import accumulate
+import matplotlib.text as mtext
 
 
 def setup_logger(output_dir):
@@ -39,53 +41,6 @@ def clear_output_directory(output_dir, ext):
     files = glob.glob(os.path.join(output_dir, f"*.{ext}"))
     for file in files:
         os.remove(file)
-
-
-def should_keep_entry(entry: str, include_weights: str = "all", exclude_weights: str = "") -> bool:
-    """
-    Determina si una clave de diccionario debe conservarse según include_weights y exclude_weights.
-    """
-    inc_list = [w.strip() for w in include_weights.split(",") if w.strip()] if include_weights and include_weights != "all" else None
-    exc_list = [w.strip() for w in exclude_weights.split(",") if w.strip()] if exclude_weights else []
-
-    for exc in exc_list:
-        if exc in entry:
-            return False
-
-    if inc_list is not None:
-        matched = any(inc in entry for inc in inc_list)
-        if not matched and any(term in entry for term in ["Weight", "weight", "Up", "Down"]):
-            return False
-
-    return True
-
-
-def filter_histogram_variations(hist_obj, include_weights: str = "all", exclude_weights: str = ""):
-    """
-    Filtra las categorías del eje 'variation' en objetos Hist de Coffea/hist.
-    """
-    if not hasattr(hist_obj, "axes") or "variation" not in hist_obj.axes.name:
-        return hist_obj
-
-    inc_list = [w.strip() for w in include_weights.split(",") if w.strip()] if include_weights and include_weights != "all" else None
-    exc_list = [w.strip() for w in exclude_weights.split(",") if w.strip()] if exclude_weights else []
-
-    kept_variations = []
-    for var in hist_obj.axes["variation"]:
-        if var == "nominal":
-            kept_variations.append(var)
-            continue
-
-        if any(exc in var for exc in exc_list):
-            continue
-
-        if inc_list is not None:
-            if any(inc in var for inc in inc_list):
-                kept_variations.append(var)
-        else:
-            kept_variations.append(var)
-
-    return hist_obj[{"variation": kept_variations}]
 
 
 def combine_event_tables(df1, df2, blind):
@@ -223,19 +178,17 @@ def df_to_latex_average(df, table_title="Events"):
 
 
 def get_variations_keys(processed_histograms: dict):
-    variations = []
+    variations = {}
     for process, histogram_dict in processed_histograms.items():
         if process == "Data":
             continue
         for feature in histogram_dict:
             helper_histogram = histogram_dict[feature]
-            if hasattr(helper_histogram, "axes") and "variation" in helper_histogram.axes.name:
-                variations = [
-                    var for var in helper_histogram.axes["variation"] if var != "nominal"
-                ]
-                break
-        if variations:
+            variations = [
+                var for var in helper_histogram.axes["variation"] if var != "nominal"
+            ]
             break
+        break
     variations = list(
         set([var.replace("Up", "").replace("Down", "") for var in variations])
     )
@@ -364,3 +317,19 @@ def build_systematic_summary(processed_histograms, workflow="1b1mu"):
     summary_table = pd.DataFrame(summary_dict).fillna(1.0)
 
     return summary_table
+
+def apply_cms_text_patch():
+    """Applies the patch to raise the vertical position of the 'Preliminary' text."""
+    if not hasattr(mtext.Text, "_original_init"):
+        mtext.Text._original_init = mtext.Text.__init__
+
+        def _patched_text_init(self, x=0, y=0, text="", **kwargs):
+            if hasattr(y, "shape") or isinstance(y, (list, tuple)):
+                y = float(np.ravel(y)[0])
+            if hasattr(x, "shape") or isinstance(x, (list, tuple)):
+                x = float(np.ravel(x)[0])
+            if isinstance(text, str) and "Preliminary" in text:
+                y += 0.015
+            mtext.Text._original_init(self, x, y, text, **kwargs)
+
+        mtext.Text.__init__ = _patched_text_init

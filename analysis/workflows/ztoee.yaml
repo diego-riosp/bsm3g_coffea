@@ -89,7 +89,7 @@ corrections:
   event_weights:
     genWeight: true
     pileupWeight: true
-    l1prefiringWeight: true
+    l1prefiringWeight: false
     lhepdfWeight: true
     lhescaleWeight: true
     partonshowerWeight: true

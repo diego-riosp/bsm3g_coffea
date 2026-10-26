@@ -20,9 +20,9 @@ def add_isr_weight(events, weights, year, variation, dataset, fit, one_dim):
 
         # load correction set
         if one_dim:
-            fname = f"{Path.cwd()}/analysis/data/{year}_ztojets_isr_weight_1d"
+            fname = f"{Path.cwd()}/analysis/data/{year}_zplusjets_isr_weight_1d"
         else:
-            fname = f"{Path.cwd()}/analysis/data/{year}_ztojets_isr_weight"
+            fname = f"{Path.cwd()}/analysis/data/{year}_zplusjets_isr_weight"
             if fit:
                 fname += "_fit"
         fname += ".json.gz"

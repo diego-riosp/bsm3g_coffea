@@ -6,7 +6,6 @@ from analysis.corrections import (
     BTagCorrector,
     MuonCorrector,
     ElectronCorrector,
-    MuonHighPtCorrector,
     add_isr_weight,
     add_top_pt_weight,
     add_lhepdf_weight,
@@ -14,8 +13,6 @@ from analysis.corrections import (
     add_pujetid_weight,
     add_scalevar_weight,
     add_top_boost_weight,
-    apply_jet_corrections,
-    apply_jerc_corrections,
     add_l1prefiring_weight,
     add_partonshower_weight,
     apply_met_phi_corrections,
@@ -43,30 +40,7 @@ def object_corrector_manager(events, year, run, dataset, workflow_config):
     """apply object level corrections"""
 
     objcorr_config = workflow_config.corrections_config["objects"]
-    
-    if "jets" in objcorr_config:
-        is_mc = hasattr(events, "genWeight")
-        apply_jec = True
-        apply_jer = is_mc
-        apply_junc = True
-
-        # Condición específica para Data en 2024:
-        if not is_mc and str(year) == "2024":
-            valid_run_mask = False
-            for start_run, end_run in RUN_2024_JEC_RANGES:
-                valid_run_mask = valid_run_mask | (
-                    (events.run >= start_run) & (events.run <= end_run)
-                )
-            apply_jec = ak.any(valid_run_mask)
-
-        apply_jerc_corrections(
-            events,
-            year=year,
-            dataset=dataset,
-            apply_jec=apply_jec,
-            apply_jer=apply_jer,
-            apply_junc=apply_junc,
-        )
+        
     if "muons" in objcorr_config:
         # apply rochester corretions to muons
         if run == "2":
@@ -81,12 +55,11 @@ def object_corrector_manager(events, year, run, dataset, workflow_config):
             )
     if "taus" in objcorr_config:
         if hasattr(events, "genWeight"):
-            if run == "2":
-                # apply energy corrections to taus (only to MC)
-                apply_tau_energy_scale_corrections(events, year)
+            apply_tau_energy_scale_corrections(events, year)
     if "met" in objcorr_config:
         # apply MET phi modulation corrections
         apply_met_phi_corrections(events, year)
+    return  
 
 
 def weight_manager(

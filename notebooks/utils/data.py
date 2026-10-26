@@ -13,6 +13,7 @@ import matplotlib.gridspec as gridspec
 from .fitting import poly_func, find_optimal_tf_poly
 from .plotting import plot_panel
 from .plotting import plot_sr_corrected_panel
+from .plotting import plot_syst_panel
 
 
 def load_hists(year, workflow):
@@ -89,10 +90,10 @@ def compute_tf_for_year(year_str, workflow):
     h_tf_base = out_tf["Data"]["transverse_mass"] + (mc_tf_all * -1)
 
     if "ele" in workflow:
-        target_axis = "electron_met_mass_leading"
+        target_axis = "electron_met_mass_subleading"
         cat_num, cat_den = "1LnT1T", "1LnT1nT"
     else:
-        target_axis = "muon_met_mass_leading"
+        target_axis = "muon_met_mass_subleading"
         cat_num, cat_den = "2T", "1T1LnT"
 
     h_Tight = h_tf_base[{"variation": "nominal", "category": cat_num}].project(
@@ -113,14 +114,14 @@ WORKFLOWS_QCD_CONFIG = {
     "qcd_tf_ele": {
         "qcd_workflow": "qcd_ele",
         "variable_qcd": "electron_met_mass",
-        "xlabel": r"$m_T(e_1, p_T^{\mathrm{miss}})$ [GeV]",
+        "xlabel": r"$m_T(e_2, p_T^{\mathrm{miss}})$ [GeV]",
         "cat_num": "1LnT1T",
         "cat_den": "1LnT1nT",
     },
     "qcd_tf_mu": {
         "qcd_workflow": "qcd_mu",
         "variable_qcd": "muon_met_mass",
-        "xlabel": r"$m_T(\mu_1, p_T^{\mathrm{miss}})$ [GeV]",
+        "xlabel": r"$m_T(\mu_2, p_T^{\mathrm{miss}})$ [GeV]",
         "cat_num": "2T",
         "cat_den": "1T1LnT",
     },
@@ -842,3 +843,191 @@ def run_ttbar_sr_poly_correction(
                 plt.tight_layout()
                 plt.savefig(save_path, dpi=300)
                 plt.close(fig)
+
+def run_systematic_comparison(workflows, years, luminosities=None, output_dir=None):
+    """Calculates and plots systematic differences between nominal and recalculated masses for Data - non-tt MC."""
+    if output_dir is None:
+        output_dir = Path("notebooks/plots/ttbar_estimation/syst")
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    procs_non_tt = ["DYJetsToLL", "SingleTop", "Diboson", "WJetsToLNu"]
+    config_mapping = {
+        "2b1mu": ("muon_met_mass", "muon_met_mass_recalculated"),
+        "2b1e": ("electron_met_mass", "electron_met_mass_recalculated"),
+        "1b1mu1e": ("muon_met_mass", "muon_met_mass_recalculated"),
+        "1b1e1mu": ("electron_met_mass", "electron_met_mass_recalculated"),
+    }
+
+    if luminosities is None:
+        luminosities = {}
+
+    for workflow in workflows:
+        var_nom, var_recalc = config_mapping[workflow]
+
+        fig_grid = plt.figure(figsize=(18, 14))
+        outer_grid = gridspec.GridSpec(
+            2, 2, figure=fig_grid, wspace=0.15, hspace=0.25
+        )
+
+        for idx, year in enumerate(years):
+            lumi_val = (
+                float(round(luminosities[year] * 1e-3, 1))
+                if year in luminosities
+                else None
+            )
+
+            file_path = Path(
+                f"/eos/user/d/driosper/bsm3g_coffea_outputs/{workflow}/{year}/{year}_processed_histograms.coffea"
+            )
+            if not file_path.exists():
+                print(f"Skipping {workflow} - {year} (file not found)")
+                continue
+
+            out = load(file_path)
+
+            # 1. Extract Nominal distributions
+            h_data_nom = out["Data"]["mass"]
+            h_mc_non_tt_nom = accumulate(
+                [out[p]["mass"] for p in procs_non_tt if p in out]
+            )
+
+            d_vals_nom = (
+                h_data_nom[{"variation": "nominal"}].project(var_nom).values()
+            )
+            mc_non_tt_vals_nom = (
+                h_mc_non_tt_nom[{"variation": "nominal"}]
+                .project(var_nom)
+                .values()
+            )
+            diff_nom = d_vals_nom - mc_non_tt_vals_nom
+
+            v_d_nom = (
+                h_data_nom[{"variation": "nominal"}].project(var_nom).variances()
+            )
+            v_mc_nom = (
+                h_mc_non_tt_nom[{"variation": "nominal"}]
+                .project(var_nom)
+                .variances()
+            )
+            v_d_nom = v_d_nom if v_d_nom is not None else d_vals_nom
+            v_mc_nom = v_mc_nom if v_mc_nom is not None else mc_non_tt_vals_nom
+            var_tot_nom = v_d_nom + v_mc_nom
+
+            # 2. Extract Recalculated distributions
+            h_data_recalc = out["Data"]["mass_recalculated"]
+            h_mc_non_tt_recalc = accumulate(
+                [out[p]["mass_recalculated"] for p in procs_non_tt if p in out]
+            )
+
+            d_vals_recalc = (
+                h_data_recalc[{"variation": "nominal"}]
+                .project(var_recalc)
+                .values()
+            )
+            mc_non_tt_vals_recalc = (
+                h_mc_non_tt_recalc[{"variation": "nominal"}]
+                .project(var_recalc)
+                .values()
+            )
+            diff_recalc = d_vals_recalc - mc_non_tt_vals_recalc
+
+            v_d_recalc = (
+                h_data_recalc[{"variation": "nominal"}]
+                .project(var_recalc)
+                .variances()
+            )
+            v_mc_recalc = (
+                h_mc_non_tt_recalc[{"variation": "nominal"}]
+                .project(var_recalc)
+                .variances()
+            )
+            v_d_recalc = (
+                v_d_recalc if v_d_recalc is not None else d_vals_recalc
+            )
+            v_mc_recalc = (
+                v_mc_recalc if v_mc_recalc is not None else mc_non_tt_vals_recalc
+            )
+            var_tot_recalc = v_d_recalc + v_mc_recalc
+
+            # 3. Compute difference and propagated statistical uncertainty
+            delta_data = diff_nom - diff_recalc
+            err_delta = np.sqrt(np.maximum(var_tot_nom + var_tot_recalc, 0))
+
+            edges = (
+                h_data_nom[{"variation": "nominal"}]
+                .project(var_nom)
+                .axes[0]
+                .edges
+            )
+            centers = 0.5 * (edges[:-1] + edges[1:])
+            bin_widths = np.diff(edges)
+
+            # Combined 2x2 grid panel
+            inner_grid = gridspec.GridSpecFromSubplotSpec(
+                2,
+                1,
+                subplot_spec=outer_grid[idx],
+                height_ratios=[2.5, 1],
+                hspace=0.08,
+            )
+            ax_main_grid = fig_grid.add_subplot(inner_grid[0])
+            ax_bot_grid = fig_grid.add_subplot(
+                inner_grid[1], sharex=ax_main_grid
+            )
+
+            plot_syst_panel(
+                ax_main_grid,
+                ax_bot_grid,
+                diff_nom,
+                diff_recalc,
+                delta_data,
+                err_delta,
+                edges,
+                centers,
+                bin_widths,
+                workflow,
+                year,
+                lumi_val,
+            )
+            fig_grid.align_ylabels([ax_main_grid, ax_bot_grid])
+
+            # Individual 1x1 panel
+            fig_ind, (ax_main_ind, ax_bot_ind) = plt.subplots(
+                2,
+                1,
+                figsize=(9, 7),
+                sharex=True,
+                gridspec_kw={"height_ratios": [2.5, 1], "hspace": 0.08},
+            )
+            plot_syst_panel(
+                ax_main_ind,
+                ax_bot_ind,
+                diff_nom,
+                diff_recalc,
+                delta_data,
+                err_delta,
+                edges,
+                centers,
+                bin_widths,
+                workflow,
+                year,
+                lumi_val,
+            )
+            fig_ind.align_ylabels([ax_main_ind, ax_bot_ind])
+            fig_ind.savefig(
+                output_dir / f"systematic_diff_{workflow}_{year}.png",
+                dpi=300,
+                bbox_inches="tight",
+            )
+            plt.close(fig_ind)
+
+        fig_grid.savefig(
+            output_dir / f"systematic_diff_grid_{workflow}.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
+        plt.close(fig_grid)
+        print(
+            f"Finished processing systematic difference for workflow: {workflow}"
+        )

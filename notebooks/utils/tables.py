@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import hist
 from .data import load_hists
+from coffea.util import load
 import copy
 from coffea.processor import accumulate
 from .data import load_hists, get_total_mc_uncertainty
@@ -1083,3 +1084,147 @@ def generate_qcd_cr_tables_and_pngs(
       f"\nTables saved to '{output_filename}' and PNG images to"
       f" '{plots_dir}'."
   )
+
+def generate_latex_table_syst_diff(summary_data, bin_headers, workflow):
+    """Generates LaTeX systematic difference table displaying per-bin deltas under a multi-column header and total deviation percentage."""
+    num_bin_cols = len(bin_headers)
+    num_total_cols = 2 + num_bin_cols
+    col_spec = "@{} l " + "c " * num_bin_cols + "c @{}"
+
+    latex_code = f"\\begin{{tabular}}{{{col_spec}}}\n"
+    title_str = f"\\textbf{{Systematic Difference (Nominal vs Recalculated) --- {workflow}}}"
+    latex_code += f"\\multicolumn{{{num_total_cols}}}{{@{{}} l @{{}}}}{{{title_str}}} \\\\[4pt]\n"
+    latex_code += "\\hline\n"
+
+    # Multi-column header spanning all energy intervals
+    latex_code += f" & \\multicolumn{{{num_bin_cols}}}{{c}}{{\\textbf{{$\\delta_{{\\mathrm{{events}}}}$ per $m_T\\,(\\mathrm{{GeV}})$ bin}}}} & \\\\\n"
+
+    # Sub-headers for years, intervals, and total deviation
+    bin_cols_str = " & ".join([f"\\textbf{{{b}}}" for b in bin_headers])
+    latex_code += f"\\textbf{{Year}} & {bin_cols_str} & \\textbf{{Dev. total}} \\\\\n"
+    latex_code += "\\hline\n"
+
+    for year, metrics in summary_data.items():
+        bin_deltas = metrics["bin_deltas"]
+        pct_bbb = metrics["pct_bbb"]
+
+        bin_str = " & ".join([f"${d:+.2f}$" for d in bin_deltas])
+        latex_code += f"{year} & {bin_str} & {pct_bbb:.2f}\\% \\\\\n"
+
+    latex_code += "\\hline\n"
+    latex_code += "\\end{tabular}\n"
+
+    return latex_code
+
+
+def generate_systematic_diff_tables_and_pngs(
+    workflows, years, plots_dir=None
+):
+    """Extracts bin-by-bin deltas across mass intervals, builds LaTeX tables, and compiles high-res PNGs."""
+    if plots_dir is None:
+        plots_dir = Path("notebooks/plots/ttbar_estimation/syst")
+    plots_dir = Path(plots_dir)
+    plots_dir.mkdir(parents=True, exist_ok=True)
+
+    procs_non_tt = ["DYJetsToLL", "SingleTop", "Diboson", "WJetsToLNu"]
+    config_mapping = {
+        "2b1mu": ("muon_met_mass", "muon_met_mass_recalculated"),
+        "2b1e": ("electron_met_mass", "electron_met_mass_recalculated"),
+        "1b1mu1e": ("muon_met_mass", "muon_met_mass_recalculated"),
+        "1b1e1mu": ("electron_met_mass", "electron_met_mass_recalculated"),
+    }
+
+    output_filename = plots_dir / "outputs_systematic_diff.txt"
+
+    with open(output_filename, "w") as f:
+        for workflow in workflows:
+            var_nom, var_recalc = config_mapping[workflow]
+            summary_data = {}
+            bin_headers = []
+
+            print(f"Processing systematic difference table for workflow: {workflow}...")
+
+            for year in years:
+                file_path = Path(
+                    f"/eos/user/d/driosper/bsm3g_coffea_outputs/{workflow}/{year}/{year}_processed_histograms.coffea"
+                )
+                if not file_path.exists():
+                    print(f"  Skipping {workflow} - {year} (file not found)")
+                    continue
+
+                out = load(file_path)
+
+                # 1. Extract nominal distributions
+                h_data_nom = out["Data"]["mass"]
+                h_mc_non_tt_nom = accumulate(
+                    [out[p]["mass"] for p in procs_non_tt if p in out]
+                )
+                d_vals_nom = (
+                    h_data_nom[{"variation": "nominal"}].project(var_nom).values()
+                )
+                mc_non_tt_vals_nom = (
+                    h_mc_non_tt_nom[{"variation": "nominal"}]
+                    .project(var_nom)
+                    .values()
+                )
+                diff_nom = d_vals_nom - mc_non_tt_vals_nom
+
+                # 2. Extract recalculated distributions
+                h_data_recalc = out["Data"]["mass_recalculated"]
+                h_mc_non_tt_recalc = accumulate(
+                    [out[p]["mass_recalculated"] for p in procs_non_tt if p in out]
+                )
+                d_vals_recalc = (
+                    h_data_recalc[{"variation": "nominal"}]
+                    .project(var_recalc)
+                    .values()
+                )
+                mc_non_tt_vals_recalc = (
+                    h_mc_non_tt_recalc[{"variation": "nominal"}]
+                    .project(var_recalc)
+                    .values()
+                )
+                diff_recalc = d_vals_recalc - mc_non_tt_vals_recalc
+
+                # 3. Extract bin edges dynamically for headers
+                edges = (
+                    h_data_nom[{"variation": "nominal"}]
+                    .project(var_nom)
+                    .axes[0]
+                    .edges
+                )
+                if not bin_headers:
+                    bin_headers = [
+                        f"({int(edges[i])}--{int(edges[i+1])})"
+                        for i in range(len(edges) - 1)
+                    ]
+
+                # 4. Calculate per-bin deltas and total deviation percentage
+                delta_bin_by_bin = diff_nom - diff_recalc
+                y_nom = float(np.sum(diff_nom))
+
+                delta_bbb = float(np.sqrt(np.sum(delta_bin_by_bin**2)))
+                pct_bbb = (delta_bbb / y_nom * 100.0) if y_nom > 0 else 0.0
+
+                summary_data[year] = {
+                    "bin_deltas": delta_bin_by_bin,
+                    "pct_bbb": pct_bbb,
+                }
+
+            if summary_data:
+                table_code = generate_latex_table_syst_diff(
+                    summary_data, bin_headers, workflow
+                )
+
+                f.write(f"% ==========================================\n")
+                f.write(f"% Systematic Difference Workflow: {workflow}\n")
+                f.write(f"% ==========================================\n\n")
+                f.write(table_code)
+                f.write("\n\n")
+
+                png_path = plots_dir / f"systematic_diff_{workflow}_table.png"
+                compile_latex_to_png(table_code, str(png_path))
+
+    print(
+        f"\nSystematic difference tables saved in '{output_filename}' and PNG plots in '{plots_dir}'."
+    )

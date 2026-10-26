@@ -1,34 +1,34 @@
-MuonE:
+MuonRun2022E:
   era: E
   query: Muon/Run2022E-22Sep2023-v1/NANOAOD
   process: Data
   key: muon
   xsec: None
-MuonF:
+MuonRun2022F:
   era: F
   query: Muon/Run2022F-22Sep2023-v2/NANOAOD
   process: Data
   key: muon
   xsec: None
-MuonG:
+MuonRun2022G:
   era: G
   query: Muon/Run2022G-22Sep2023-v1/NANOAOD
   process: Data
   key: muon
   xsec: None
-EGammaE:
+EGammaRun2022E:
   era: E
   query: EGamma/Run2022E-22Sep2023-v1/NANOAOD
   process: Data
   key: electron
   xsec: None
-EGammaF:
+EGammaRun2022F:
   era: F
   query: EGamma/Run2022F-22Sep2023-v1/NANOAOD
   process: Data
   key: electron
   xsec: None
-EGammaG:
+EGammaRun2022G:
   era: G
   query: EGamma/Run2022G-22Sep2023-v2/NANOAOD
   process: Data
@@ -124,7 +124,7 @@ DYJetsToLL_inclusive_10to50:
   process: DYJetsToLL
   key: dy_inclusive
   xsec: 20950.0
-DYJetsToLL_4to50_HT40to70: #
+DYJetsToLL_4to50_HT40to70:
   era: MC
   query: DYto2L-4Jets_MLL-4to50_HT-40to70_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM
   process: DYJetsToLL

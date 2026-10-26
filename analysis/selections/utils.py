@@ -50,6 +50,26 @@ def select_dileptons_qcd(objects, key):
     # create pair combinations with all muons
     dileptons = ak.combinations(leptons, 2, fields=["l1", "l2"])
 
+    # if subleading lepton is matched, but leading lepton is not
+    # switch l1 and l2 so l1 is always the one matching the trigger
+    subleading_is_matched = dileptons.l2.is_matched & ~dileptons.l1.is_matched
+    l1 = ak.where(
+        subleading_is_matched,
+        dileptons.l2,
+        dileptons.l1
+    )
+    l2 = ak.where(
+        subleading_is_matched,
+        dileptons.l1,
+        dileptons.l2
+    )
+    dileptons = ak.zip(
+        {
+            "l1": l1,
+            "l2": l2,
+        }
+    )
+
     # add dimuon 4-momentum field
     dileptons["p4"] = dileptons.l1 + dileptons.l2
     dileptons["pt"] = dileptons.p4.pt

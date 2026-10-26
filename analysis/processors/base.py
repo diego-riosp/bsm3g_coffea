@@ -20,6 +20,7 @@ from analysis.selections import (
     get_stitching_mask,
     get_hemcleaning_mask,
 )
+from analysis.corrections import apply_jerc_corrections
 
 
 def update(events, collections):
@@ -52,39 +53,18 @@ class BaseProcessor(processor.ProcessorABC):
     def add_cutflow(
         self, events, output, objects, selection_manager, weight_manager, dataset
     ):
-        sumw = ak.sum(events.genWeight) if hasattr(events, "genWeight") else len(events)
         for category, category_cuts in self.workflow_config.event_selection[
             "categories"
         ].items():
-            output["metadata"].update({category: {"cutflow": {"initial": sumw}}})
+            output["metadata"].update({category: {"cutflow": {"initial": self.sumw}}})
             selections = []
             for cut_name in category_cuts:
                 selections.append(cut_name)
                 current_selection = selection_manager.all(*selections)
                 if ak.sum(current_selection) != 0:
-                    """
-                    pruned_ev_cutflow = events[current_selection]
-                    for obj in objects:
-                        pruned_ev_cutflow[f"selected_{obj}"] = objects[obj][
-                            current_selection
-                        ]
-                    weights_container_cutflow = weight_manager(
-                        pruned_ev=pruned_ev_cutflow,
-                        year=self.year,
-                        run=self.run,
-                        workflow=self.workflow,
-                        category=category,
-                        workflow_config=self.workflow_config,
-                        variation="nominal",
-                        dataset=dataset,
-                    )
-                    output["metadata"][category]["cutflow"][cut_name] = ak.sum(
-                        weights_container_cutflow.weight()
-                    )
-                    """
                     sumw_cutflow = (
-                        ak.sum(events.genWeight[current_selection])
-                        if hasattr(events, "genWeight")
+                        ak.sum(self.genweight[current_selection])
+                        if self.is_mc
                         else len(events[current_selection])
                     )
                     output["metadata"][category]["cutflow"][cut_name] = sumw_cutflow
@@ -95,7 +75,12 @@ class BaseProcessor(processor.ProcessorABC):
     def process(self, events):
         warnings.filterwarnings("ignore", category=RuntimeWarning)
         np.seterr(divide="ignore", invalid="ignore")
-        # correct objects
+
+        self.is_mc = hasattr(events, "genWeight")
+        self.sumw = ak.sum(events.genWeight) if self.is_mc else len(events)
+        if self.is_mc:
+            self.genweight = events.genWeight
+
         object_corrector_manager(
             events=events,
             year=self.year,
@@ -103,73 +88,89 @@ class BaseProcessor(processor.ProcessorABC):
             workflow_config=self.workflow_config,
             dataset=events.metadata["dataset"],
         )
-        # apply jet veto maps
+
         if "jets_veto" in self.workflow_config.corrections_config["objects"]:
             events = apply_jetvetomaps(events, self.year)
             
-        # check if sample is MC
-        self.is_mc = hasattr(events, "genWeight")
         if not self.is_mc:
             # add genPartFlav fields to leptons
             events["Muon", "genPartFlav"] = ak.zeros_like(events.Muon.pt)
             events["Electron", "genPartFlav"] = ak.zeros_like(events.Electron.pt)
-
-        if not self.is_mc:
             return self.process_shift(events, shift_name="nominal")
+
         met_key = "MET" if self.run == "2" else "PuppiMET"
         met = getattr(events, met_key)
 
-        shifts = [({"Jet": events.Jet, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, "nominal")]
+        base_shifts = []
+
+        if "jets" in self.workflow_config.corrections_config["objects"]:
+            base_shifts = apply_jerc_corrections(
+                events=events,
+                year=self.year,
+                shifts=base_shifts,
+                corrections_config=self.workflow_config.corrections_config
+            )
+
+
 
         if self.workflow_config.corrections_config["apply_obj_syst"]:
+            shifts = []
+            for jme_collections, shift_name in base_shifts:
+                name = "nominal" if shift_name is None else shift_name
+
+                collections = {
+                    "Jet": jme_collections["Jet"],
+                    met_key: jme_collections["MET"],
+                    "Muon": events.Muon, 
+                    "Tau": events.Tau
+                }
+                shifts.append((collections, name))
+            base_jet = shifts[0][0]["Jet"]
+            base_met = shifts[0][0][met_key]
+            
             if self.run == "2":
-                run_shifts = [
-                    ({"Jet": events.Jet, met_key: met.rochester.up, "Muon": events.Muon.rochester.up, "Tau": events.Tau}, f"CMS_rochester_{self.year_key}Up"),
-                    ({"Jet": events.Jet, met_key: met.rochester.down, "Muon": events.Muon.rochester.down, "Tau": events.Tau}, f"CMS_rochester_{self.year_key}Down"),
-                    ({"Jet": events.Jet.JER.up, met_key: met.JER.up, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Up"),
-                    ({"Jet": events.Jet.JER.down, met_key: met.JER.down, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Down"),
-                    ({"Jet": events.Jet, met_key: met.MET_UnclusteredEnergy.up, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_met_unclustered_{self.year_key}Up"),
-                    ({"Jet": events.Jet, met_key: met.MET_UnclusteredEnergy.down, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_met_unclustered_{self.year_key}Down"),
-                    ({"Jet": events.Jet, met_key: met.tau_energy.up, "Muon": events.Muon, "Tau": events.Tau.tau_energy.up}, f"CMS_t_energy_{self.year_key}Up"),
-                    ({"Jet": events.Jet, met_key: met.tau_energy.down, "Muon": events.Muon, "Tau": events.Tau.tau_energy.down}, f"CMS_t_energy_{self.year_key}Down"),
-                ]
+                shifts.extend([
+                    ({"Jet": base_jet, met_key: base_met, "Muon": events.Muon.rochester.up, "Tau": events.Tau}, f"CMS_rochester_{self.year_key}Up"),
+                    ({"Jet": base_jet, met_key: base_met, "Muon": events.Muon.rochester.down, "Tau": events.Tau}, f"CMS_rochester_{self.year_key}Down"),
+                    ({"Jet": base_jet, met_key: met.tau_energy.up, "Muon": events.Muon, "Tau": events.Tau.tau_energy.up}, f"CMS_t_energy_{self.year_key}Up"),
+                    ({"Jet": base_jet, met_key: met.tau_energy.down, "Muon": events.Muon, "Tau": events.Tau.tau_energy.down}, f"CMS_t_energy_{self.year_key}Down"),
+                ])
             else:
-                run_shifts = [
-                    ({"Jet": events.Jet, met_key: met.ptscalecorr.up, "Muon": events.Muon.ptscalecorr.up, "Tau": events.Tau}, f"CMS_scale_mu_{self.year_key}Up"),
-                    ({"Jet": events.Jet, met_key: met.ptscalecorr.down, "Muon": events.Muon.ptscalecorr.down, "Tau": events.Tau}, f"CMS_scale_mu_{self.year_key}Down"),
-                    ({"Jet": events.Jet, met_key: met.ptresolcorr.up, "Muon": events.Muon.ptresolcorr.up, "Tau": events.Tau}, f"CMS_res_mu_{self.year_key}Up"),
-                    ({"Jet": events.Jet, met_key: met.ptresolcorr.down, "Muon": events.Muon.ptresolcorr.down, "Tau": events.Tau}, f"CMS_res_mu_{self.year_key}Down"),
-                    ({"Jet": events.Jet.JES_jes.up, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_scale_j_{self.year_key}Up"),
-                    ({"Jet": events.Jet.JES_jes.down, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_scale_j_{self.year_key}Down"),
+                run3_shifts = [
+                    ({"Jet": base_jet, met_key: base_met, "Muon": events.Muon.ptscalecorr.up, "Tau": events.Tau}, f"CMS_scale_mu_{self.year_key}Up"),
+                    ({"Jet": base_jet, met_key: base_met, "Muon": events.Muon.ptscalecorr.down, "Tau": events.Tau}, f"CMS_scale_mu_{self.year_key}Down"),
+                    ({"Jet": base_jet, met_key: base_met, "Muon": events.Muon.ptresolcorr.up, "Tau": events.Tau}, f"CMS_res_mu_{self.year_key}Up"),
+                    ({"Jet": base_jet, met_key: base_met, "Muon": events.Muon.ptresolcorr.down, "Tau": events.Tau}, f"CMS_res_mu_{self.year_key}Down"),
+                    ({"Jet": base_jet, met_key: met.tau_energy.up, "Muon": events.Muon, "Tau": events.Tau.tau_energy.up}, f"CMS_t_energy_{self.year_key}Up"),
+                    ({"Jet": base_jet, met_key: met.tau_energy.down, "Muon": events.Muon, "Tau": events.Tau.tau_energy.down}, f"CMS_t_energy_{self.year_key}Down"),
                 ]
+
                 if self.year != "2024":
-                    run_shifts.extend([
-                        ({"Jet": events.Jet.JER.up, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Up"),
-                        ({"Jet": events.Jet.JER.down, met_key: met, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_res_j_{self.year_key}Down"),
+                    run3_shifts.extend([
+                        ({"Jet": base_jet, met_key: base_met.xycorr.up, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_met_xy_{self.year_key}Up"),
+                        ({"Jet": base_jet, met_key: base_met.xycorr.down, "Muon": events.Muon, "Tau": events.Tau}, f"CMS_met_xy_{self.year_key}Down"),
                     ])
-            shifts.extend(run_shifts)
-        
+
+                shifts.extend(run3_shifts)
+
         return processor.accumulate(
             self.process_shift(update(events, collections), name)
             for collections, name in shifts
         )
 
+
     def process_shift(self, events, shift_name):
         year = self.year
         is_mc = self.is_mc
-        # get dataset name
         dataset = events.metadata["dataset"]
-        # initialize output dictionary
+
         output = {}
         output["metadata"] = {}
         if shift_name == "nominal":
-            # save sum of weights before object_selection
-            sumw = ak.sum(events.genWeight) if is_mc else len(events)
-            output["metadata"].update({"sumw": sumw})
+            output["metadata"].update({"sumw": self.sumw})
 
             for category in self.workflow_config.event_selection["categories"]:
-
-                output["metadata"].update({category: {"cutflow": {"initial": sumw}}})
+                output["metadata"].update({category: {"cutflow": {"initial": self.sumw}}})
 
         # ----------------------------------------------------------------------------------
         # object selection
@@ -178,12 +179,11 @@ class BaseProcessor(processor.ProcessorABC):
             self.workflow_config.object_selection, year, self.run
         )
         objects = object_selector.select_objects(events)
+
         # ----------------------------------------------------------------------------------
         # event selection
         # ----------------------------------------------------------------------------------
-        # itinialize selection manager and add all selections from workflow
         selection_manager = PackedSelection()
-        #  to selector manager
         event_selection = self.workflow_config.event_selection
         if "hlt_paths" in event_selection:
             hlt_paths = event_selection["hlt_paths"]
@@ -191,7 +191,6 @@ class BaseProcessor(processor.ProcessorABC):
         for selection, mask in event_selection["selections"].items():
             selection_manager.add(selection, eval(mask))
 
-        # add cutflow to metadata
         self.add_cutflow(
             events, output, objects, selection_manager, weight_manager, dataset
         )
@@ -201,16 +200,12 @@ class BaseProcessor(processor.ProcessorABC):
         # -----------------------------------------------------------------------------------
         histograms = copy.deepcopy(self.histograms)
         for category, category_cuts in event_selection["categories"].items():
-            # get selection mask by category
             category_mask = selection_manager.all(*category_cuts)
             nevents_after = ak.sum(category_mask)
             if nevents_after > 0:
-                # get pruned events
                 pruned_ev = events[category_mask]
-                # add each selected object to 'pruned_ev' as a new field
                 for obj in objects:
                     pruned_ev[f"selected_{obj}"] = objects[obj][category_mask]
-                # get weights container
                 weights_container = weight_manager(
                     pruned_ev=pruned_ev,
                     year=year,
@@ -222,12 +217,10 @@ class BaseProcessor(processor.ProcessorABC):
                     dataset=dataset,
                 )
                 if shift_name == "nominal":
-                    # save number of events after selection to metadata
                     weighted_final_nevents = ak.sum(weights_container.weight())
                     output["metadata"][category].update(
                         {"weighted_final_nevents": weighted_final_nevents}
                     )
-                # get analysis variables and fill histograms
                 variables_map = {}
                 for variable, axis in self.histogram_config.axes.items():
                     variables_map[variable] = eval(axis.expression)[category_mask]
@@ -241,7 +234,6 @@ class BaseProcessor(processor.ProcessorABC):
                     is_mc=is_mc,
                     flow=self.histogram_config.flow,
                 )
-        # define output dictionary accumulator
         output["histograms"] = histograms
         return output
 

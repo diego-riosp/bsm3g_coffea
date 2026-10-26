@@ -1,32 +1,81 @@
-"""Check job outputs, identify missing results, and optionally resubmit jobs or update input filesets based on xrootd site issues"""
-
+"""
+This script inspects Condor job outputs, identifies missing jobs, analyzes recent xrootd-related failures, and optionally builds input filesets with problematic sites blacklisted and resubmits only the missing jobs.
+Incorporates custom user features (Rucio/DAS, deep-reset, workers, dynamic cpu/memory update, skipbadfiles).
+"""
 import re
 import sys
-import select
-import yaml
 import json
+import select
 import argparse
-import logging
 import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
+from collections import defaultdict
 from analysis.utils import make_output_directory
 from analysis.filesets.xrootd_sites import xroot_to_site
-from analysis.filesets.utils import divide_list, modify_site_list, extract_xrootd_errors
+from analysis.filesets.utils import (
+    divide_list,
+    modify_site_list,
+)
 
+ENDPOINT_PATTERN = r"root://[a-zA-Z0-9._-]+(?::\d+)?"
 
-def timed_input(prompt, timeout=3, default="y"):
-    """Request user input with a timeout. Falls back to default if timed out or empty."""
-    print(f"{prompt} [{default.upper()}/n] (auto-selected in {timeout}s): ", end="", flush=True)
-    
-    # Check for available input on stdin within the timeout limit
-    ready, _, _ = select.select([sys.stdin], [], [], timeout)
-    if ready:
-        response = sys.stdin.readline().strip()
-        return response.lower() if response else default.lower()
-    else:
-        print(f"\n[Timeout reached] Using default option: '{default.upper()}'")
-        return default.lower()
+EXECUTOR_ERROR_PATTERNS = {
+    "Authentication": [
+        r"Auth failed",
+        r"No protocols left to try",
+    ],
+    "Connection": [
+        r"\[FATAL\]\s*Connection error",
+        r"Connection reset",
+        r"Connection refused",
+        r"Network is unreachable",
+        r"XRootD error:.*Connection error",
+        r"\bConnectionError\b",
+    ],
+    "TLS": [
+        r"\bTLS error\b",
+        r"SSL error",
+    ],
+}
+
+FILE_ERROR_PATTERNS = {
+    "File access / permission": [
+        r"\[3010\]\s*Unable to open file",
+        r"Unable to open file",
+        r"Failed to open file",
+        r"Error opening file",
+        r"Operation not permitted",
+        r"Permission denied",
+    ],
+    "File not found": [
+        r"File not found",
+        r"No such file or directory",
+        r"\bFileNotFoundError\b",
+    ],
+    "Read error": [
+        r"Read error",
+        r"Input/output error",
+        r"\bIOError\b",
+    ],
+    "Timeout": [
+        r"Operation expired",
+        r"timed?\s*out",
+        r"\btimeout\b",
+        r"\bTimeoutError\b",
+    ],
+    "Socket / network": [
+        r"Socket error",
+        r"XrdCl::",
+    ],
+    "Other I/O error": [
+        r"\bOSError\b",
+        r"XRootD error",
+    ],
+}
+
+ENDPOINT_REGEX = re.compile(ENDPOINT_PATTERN, flags=re.IGNORECASE)
+ERROR_PATTERNS = {**EXECUTOR_ERROR_PATTERNS, **FILE_ERROR_PATTERNS}
 
 
 def parse_args():
@@ -34,12 +83,13 @@ def parse_args():
     parser.add_argument(
         "-w",
         "--workflow",
-        type=str,
+        dest="workflow",
         required=True,
+        type=str,
         choices=[
             f.stem for f in (Path.cwd() / "analysis" / "workflows").glob("*.yaml")
         ],
-        help="workflow config to test",
+        help="Workflow name (must correspond to a YAML file in analysis/workflows)",
     )
     parser.add_argument(
         "-y",
@@ -57,17 +107,19 @@ def parse_args():
             "2023postBPix",
             "2024",
         ],
-        help="dataset year",
+        help="Dataset year",
     )
     parser.add_argument(
-        "--eos", action="store_true", help="Enable reading outputs from /eos"
+        "--eos",
+        action="store_true",
+        help="Read job outputs from EOS instead of local storage",
     )
     parser.add_argument(
         "--output_format",
         type=str,
         default="coffea",
-        choices=["coffea", "root"],
-        help="Format of output histograms",
+        choices=["coffea", "parquet", "root"],
+        help="Output file format of the produced histograms",
     )
     parser.add_argument(
         "--workers",
@@ -78,23 +130,28 @@ def parse_args():
     parser.add_argument(
         "--hours_ago",
         type=int,
-        default=3,
-        help="use .err files that have been modified less than 'hours_ago' hours ago",
+        default=8,
+        help="Only consider .err files modified within the last N hours",
     )
     parser.add_argument(
-        "-l",
-        "--label",
-        type=str,
-        default="",
-        help="label for the output directory",
+        "--reset",
+        action="store_true",
+        help="Delete all job outputs, logs for this workflow/year and rerun",
     )
-    parser.add_argument("--reset", action="store_true", help="Reset previous outputs and run runner.py")
     parser.add_argument(
-        "-m",
-        "--memory",
-        type=str,
-        default="4000",
-        help="Requested memory (in MB) for the condor job",
+        "--deep-reset",
+        action="store_true",
+        help="Redo fileset discovery (deletes analysis/filesets files too)",
+    )
+    parser.add_argument(
+        "--skipbadfiles",
+        action="store_true",
+        help="skip root files with errors",
+    )
+    parser.add_argument(
+        "--single_fetch",
+        action="store_true",
+        help="Run fetch.py only once by merging all failing sites and datasets into a single group",
     )
     parser.add_argument(
         "--global",
@@ -103,15 +160,41 @@ def parse_args():
         help="send xrd-cms-global partition filesets",
     )
     parser.add_argument(
-        "--deep-reset",
-        action="store_true",
-        help="Redo fileset discovery",
+        "-m",
+        "--memory",
+        type=str,
+        default="4000",
+        help="Requested memory (in MB) for the condor job",
     )
     parser.add_argument(
-        "--skipbadfiles",
-        action="store_true",
-        help="skip root files with errors",
+        "-c",
+        "--cpus",
+        type=int,
+        default=4,
+        help="Requested cpus for the condor job",
     )
+    parser.add_argument(
+        "-l",
+        "--label",
+        type=str,
+        default="",
+        help="output directory label",
+    )
+    parser.add_argument(
+        "-e",
+        "--executor",
+        dest="executor",
+        type=str,
+        default="futures",
+        help="executor to run the processor",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Show detailed XRootD error diagnostics.",
+    )
+    
     # Mutually exclusive group for dataset discovery strategy
     discovery_group = parser.add_mutually_exclusive_group()
     discovery_group.add_argument(
@@ -119,39 +202,123 @@ def parse_args():
         dest="discovery",
         action="store_const",
         const="das",
-        help="Use dasgoclient for dataset discovery (Default).",
+        help="Use dasgoclient for dataset discovery.",
     )
     discovery_group.add_argument(
         "--rucio",
         dest="discovery",
         action="store_const",
         const="rucio",
-        help="Use DataDiscoveryCLI (Rucio) for dataset discovery.",
+        help="Use DataDiscoveryCLI (Rucio) for dataset discovery (Default).",
     )
     parser.set_defaults(discovery="rucio")
+    
     return parser.parse_args()
 
 
+def get_missing_partition_endpoints(partitions, missing_ids):
+    endpoints = set()
+    for partition_id in missing_ids:
+        partition_data = partitions.get(str(partition_id), {})
+        for sample_data in partition_data.values():
+            for url in sample_data.get("files", {}):
+                match = ENDPOINT_REGEX.match(url)
+                if match:
+                    endpoints.add(match.group())
+    return endpoints
+
+
+def sort_partition_ids(partitions):
+    return sorted(
+        partitions,
+        key=lambda partition: (
+            not partition.isdigit(),
+            int(partition) if partition.isdigit() else partition,
+        ),
+    )
+
+
+def timed_input(prompt, timeout=10, default="y"):
+    print(
+        f"{prompt} [{default.upper()}/n] (auto-selected in {timeout}s): ",
+        end="",
+        flush=True,
+    )
+    ready, _, _ = select.select([sys.stdin], [], [], timeout)
+    if ready:
+        response = sys.stdin.readline().strip()
+        return response.lower() if response else default.lower()
+    else:
+        print(f"\n[Timeout reached] Using default option: '{default.upper()}'")
+        return default.lower()
+
+
+def identify_error_types(content):
+    return {
+        error_type
+        for error_type, patterns in ERROR_PATTERNS.items()
+        if any(re.search(pattern, content, flags=re.IGNORECASE) for pattern in patterns)
+    }
+
+
+def get_missing_job_partitions(job_dir, dataset):
+    missing_path = job_dir / dataset / "missing.txt"
+    if not missing_path.is_file():
+        return set()
+    return {
+        line.strip() for line in missing_path.read_text().splitlines() if line.strip()
+    }
+
+
+def analyze_xrootd_error_logs(error_files, job_dir, dataset, verbose=False):
+    dataset_dir = Path(job_dir) / dataset
+    partitions_path = dataset_dir / "partitions.json"
+    missing_partition_ids = get_missing_job_partitions(Path(job_dir), dataset)
+
+    if partitions_path.is_file():
+        partitions_data = json.loads(partitions_path.read_text())
+    else:
+        partitions_data = {}
+        if verbose:
+            print(f"[{dataset}] Missing partitions.json: {partitions_path}")
+
+    endpoints = set()
+    error_types = set()
+
+    for error_file in error_files:
+        error_file = Path(error_file)
+        try:
+            content = error_file.read_text(errors="replace")
+        except OSError as exc:
+            if verbose:
+                print(f"[{dataset}] Could not read {error_file}: {exc}")
+            continue
+
+        endpoints.update(ENDPOINT_REGEX.findall(content))
+        error_types.update(identify_error_types(content))
+
+    if not endpoints:
+        endpoints = get_missing_partition_endpoints(
+            partitions_data, missing_partition_ids
+        )
+        if verbose:
+            print(f"[{dataset}] Endpoint fallback from missing partitions: {sorted(endpoints)}")
+
+    if verbose:
+        print(f"[{dataset}] Error types: {sorted(error_types)}")
+        print(f"[{dataset}] Endpoints: {sorted(endpoints)}")
+        print(f"[{dataset}] Missing partitions: {sorted(missing_partition_ids)}")
+
+    return {
+        "endpoints": endpoints,
+        "error_types": error_types,
+        "partitions": missing_partition_ids,
+    }
+
+
 def get_jobs_info(job_dir, output_dir, log_dir, output_format, hours_ago=3):
-    """
-    Collect expected and completed job numbers per dataset, and gather error logs.
-
-    Parameters:
-    -----------
-        job_dir (Path): Directory containing dataset job folders.
-        output_dir (Path): Directory with output files.
-        log_dir (Path): Directory containing log files.
-        output_format (str): File format of the output (e.g., 'coffea' or 'root').
-
-    Returns:
-    --------
-        tuple:
-            - jobnum (dict): Expected job numbers per dataset.
-            - jobnum_done (dict): Successfully completed job numbers per dataset.
-            - error_file (list): List of .err log files.
-    """
-    jobnum, jobnum_done = {}, {}
-    error_file = []
+    jobnum, jobnum_done, error_files = {}, {}, {}
+    cutoff = datetime.now() - timedelta(hours=hours_ago)
 
     for dataset_dir in job_dir.iterdir():
         if not dataset_dir.is_dir():
@@ -165,264 +332,414 @@ def get_jobs_info(job_dir, output_dir, log_dir, output_format, hours_ago=3):
             )
 
         jobnum[dataset] = jobnum_path.read_text().splitlines()
-        output_files = list((output_dir / dataset).glob(f"*.{output_format}"))
-        jobnum_done[dataset] = [f.stem.replace(f"{dataset}_", "") for f in output_files]
+        prefix = f"{dataset}_"
+        jobnum_done[dataset] = [
+            output.stem.removeprefix(prefix)
+            for output in (output_dir / dataset).glob(f"*.{output_format}")
+            if output.stem.startswith(prefix)
+        ]
 
-        # look for error files created within the last 3 hours
-        x_hours_ago = datetime.now() - timedelta(hours=hours_ago)
-        for err_file in (log_dir / dataset).glob("*.err"):
-            if datetime.fromtimestamp(err_file.stat().st_mtime) > x_hours_ago:
-                error_file.append(err_file)
+        recent_errors = [
+            path
+            for path in (log_dir / dataset).glob("*.err")
+            if datetime.fromtimestamp(path.stat().st_mtime) > cutoff
+        ]
+        if recent_errors:
+            error_files[dataset] = recent_errors
 
-    return jobnum, jobnum_done, error_file
+    return jobnum, jobnum_done, error_files
 
 
-def print_job_status(jobnum, jobnum_done):
-    """
-    Print a summary of expected, finished, and missing jobs. Show YAML list of datasets with missing jobs.
+def print_job_status(jobnum, jobnum_done, show_missing_datasets=False):
+    jobnum_missing = {}
+    datasets_with_missing_jobs = []
 
-    Parameters:
-    -----------
-        jobnum (dict): Expected job numbers per dataset.
-        jobnum_done (dict): Completed job numbers per dataset.
+    for dataset, expected_jobs in jobnum.items():
+        expected = set(expected_jobs)
+        completed = set(jobnum_done.get(dataset, []))
+        missing = expected - completed
 
-    Returns:
-    --------
-        tuple:
-            - jobnum_missing (dict): Missing job numbers per dataset.
-            - datasets_with_missing (list): Datasets that have missing jobs.
-    """
-    jobnum_missing = {d: set(jobnum[d]) - set(jobnum_done.get(d, [])) for d in jobnum}
-    n_expected = sum(len(v) for v in jobnum.values())
-    n_done = sum(len(v) for v in jobnum_done.values())
-    n_missing = sum(len(v) for v in jobnum_missing.values())
+        jobnum_missing[dataset] = missing
 
-    logging.info("Jobs status:")
-    logging.info(f"Expected: {n_expected}")
-    logging.info(f"Finished: {n_done}")
-    logging.info(f"Missing: {n_missing}\n")
+        if missing:
+            datasets_with_missing_jobs.append(dataset)
 
-    datasets_with_missing = [d for d in jobnum_missing if jobnum_missing[d]]
-    if n_missing:
-        print(
-            f"Datasets with missing jobs ({len(datasets_with_missing)}/{len(jobnum)}):"
-        )
-        print(
-            yaml.dump(
-                datasets_with_missing,
-                default_flow_style=False,
-                sort_keys=False,
-                indent=2,
+    total_expected = sum(len(set(jobs)) for jobs in jobnum.values())
+    total_finished = sum(
+        len(set(jobnum.get(dataset, [])) & set(jobnum_done.get(dataset, [])))
+        for dataset in jobnum
+    )
+    total_missing = sum(len(missing) for missing in jobnum_missing.values())
+
+    print("-" * 60)
+    print("JOB STATUS SUMMARY")
+    print("-" * 60)
+    print(f"Total jobs expected : {total_expected}")
+    print(f"Total jobs finished : {total_finished}")
+    print(f"Total jobs missing  : {total_missing}")
+    print("-" * 60)
+
+    if show_missing_datasets and datasets_with_missing_jobs:
+        print(f"Datasets with missing jobs ({len(datasets_with_missing_jobs)}/{len(jobnum)}):")
+        print("-" * 60)
+        for dataset in sorted(datasets_with_missing_jobs):
+            print(f"- {dataset}")
+
+    return jobnum_missing, datasets_with_missing_jobs
+
+
+def update_executor_for_dataset(job_dir, dataset, executor="iterative"):
+    args_json = job_dir / dataset / "arguments.json"
+    if not args_json.exists():
+        print(f"[{dataset}] Missing arguments.json — cannot update executor")
+        return
+
+    arguments = json.loads(args_json.read_text())
+    if arguments.get("executor") == executor:
+        print(f"[{dataset}] Executor is already '{executor}'")
+        return
+
+    arguments["executor"] = executor
+    args_json.write_text(json.dumps(arguments, indent=4) + "\n")
+    print(f"[{dataset}] Updated executor to '{executor}'")
+
+
+def analyze_xrootd_errors_by_dataset(error_files, job_dir, dataset, verbose=False):
+    errors = analyze_xrootd_error_logs(
+        error_files, job_dir=job_dir, dataset=dataset, verbose=verbose
+    )
+
+    def map_sites(endpoints):
+        return {
+            xroot_to_site[endpoint]
+            for endpoint in endpoints
+            if endpoint in xroot_to_site
+        }
+
+    log_sites = map_sites(errors["endpoints"])
+    errors["sites"] = log_sites
+
+    if not log_sites:
+        partitions_path = Path(job_dir) / dataset / "partitions.json"
+        fallback_endpoints = set()
+        if partitions_path.is_file():
+            partitions = json.loads(partitions_path.read_text())
+            missing_ids = get_missing_job_partitions(Path(job_dir), dataset)
+            fallback_endpoints = get_missing_partition_endpoints(
+                partitions, missing_ids
             )
-        )
 
-    return jobnum_missing, datasets_with_missing
+        fallback_sites = map_sites(fallback_endpoints)
+        if fallback_sites:
+            errors["endpoints"] = fallback_endpoints
+            errors["sites"] = fallback_sites
 
+        if verbose:
+            print(f"[{dataset}] Fallback endpoints: {sorted(fallback_endpoints)}")
+            print(f"[{dataset}] Fallback sites: {sorted(fallback_sites)}")
 
-def analyze_xrootd_errors(error_file):
-    """
-    Analyze error logs and extract problematic xrootd sites.
+    if verbose:
+        for endpoint in sorted(errors["endpoints"]):
+            if endpoint not in xroot_to_site:
+                print(f"[{dataset}] Could not map XRootD endpoint '{endpoint}' to a site name")
 
-    Parameters:
-    -----------
-        error_file (list): List of error log files.
-
-    Returns:
-    --------
-        list: Sites with detected xrootd errors.
-    """
-    xrootd_errs = extract_xrootd_errors(error_file)
-    if not xrootd_errs:
-        return []
-
-    site_errs = [xroot_to_site[err] for err in xrootd_errs if err in xroot_to_site]
-    for err in xrootd_errs:
-        if err not in xroot_to_site:
-            logging.warning(f"Could not identify the site for xrootd error {err}")
-
-    print("Sites with xrootd OS errors:")
-    print(yaml.dump(site_errs, default_flow_style=False, sort_keys=False, indent=2))
-    return site_errs
+    return errors
 
 
-def update_input_filesets(
-    site_errs, year, fileset_dir, job_dir, datasets_with_missing_jobs, use_global
+def group_datasets_by_sites(dataset_sites):
+    groups = defaultdict(list)
+    for dataset, sites in dataset_sites.items():
+        groups[frozenset(sites)].append(dataset)
+    return groups
+
+
+def update_input_filesets_for_group(
+    sites_to_blacklist,
+    year,
+    fileset_dir,
+    job_dir,
+    datasets,
+    discovery_tool
 ):
-    """
-    Blacklist failing xrootd sites and update filesets for affected datasets.
+    print("------------------------------------------------------------")
+    print("BUILDING FILESETS FOR DATASET GROUP")
+    print("------------------------------------------------------------")
+    print(f"Datasets           : {datasets}")
+    print(f"Blacklisted sites  : {sorted(sites_to_blacklist)}")
 
-    Parameters:
-    -----------
-        site_errs (list): List of sites to blacklist.
-        year (str): Dataset year.
-        fileset_dir (Path): Directory containing JSON filesets.
-        job_dir (Path): Directory with Condor job files.
-        datasets_with_missing_jobs (list): Datasets to update.
-    """
-    for site in xroot_to_site.values():
+    for site in set(xroot_to_site.values()):
         modify_site_list(year, site, "white")
 
-    for site in site_errs:
+    for site in sites_to_blacklist:
         modify_site_list(year, site, "black")
 
-    samples_str = (
-        " ".join(datasets_with_missing_jobs) if datasets_with_missing_jobs else ""
-    )
-    cmd = ["python3", "fetch.py", "--year", year, "--samples", samples_str, "--skip_site"]
-    if args.discovery == "rucio":
+    print("Running fetch.py for this group...")
+    samples_str = " ".join(datasets)
+    cmd = [
+        "python3",
+        "fetch.py",
+        "--year",
+        year,
+        "--samples",
+        samples_str,
+        "--skip_site",
+    ]
+    if discovery_tool == "rucio":
         cmd.append("--rucio")
     else:
         cmd.append("--das")
-    subprocess.run(cmd)
+
+    subprocess.run(cmd, check=False)
 
     fileset_path = fileset_dir / f"fileset_{year}_NANO_lxplus.json"
     all_filesets = json.loads(fileset_path.read_text())
 
-    for dataset in datasets_with_missing_jobs:
+    for dataset in datasets:
         if dataset not in all_filesets:
-            logging.warning(f"Dataset {dataset} not found in fileset JSON")
+            print(f"[{dataset}] Not found in fileset JSON — skipping")
             continue
 
-        root_files = all_filesets[dataset]['files']
+        root_files = all_filesets[dataset]
         args_json = job_dir / dataset / "arguments.json"
         if not args_json.exists():
-            logging.error(f"Missing arguments.json for dataset {dataset}")
+            print(f"[{dataset}] Missing arguments.json — cannot repartition")
             continue
 
         nfiles = json.loads(args_json.read_text())["nfiles"]
-        root_files_list = divide_list(list(root_files), nfiles)
+        metadata = all_filesets[dataset].get("metadata", {})
+        root_files_list = divide_list(list(root_files["files"].keys()), nfiles)
 
         partition_dataset = {
-            str(i + 1): {
-                (f"{dataset}_{i+1}" if len(root_files_list) > 1 else dataset): {
-                    "files": {root_file: "Events" for root_file in chunk},
-                    "metadata": all_filesets[dataset]['metadata']
+            i + 1: {
+                f"{dataset}_{i+1}" if len(root_files_list) > 1 else dataset: {
+                    "files": {filename: "Events" for filename in chunk},
+                    "metadata": metadata,
                 }
             }
             for i, chunk in enumerate(root_files_list)
         }
-
         partition_file = job_dir / dataset / "partitions.json"
         with open(partition_file, "w") as json_file:
             json.dump(partition_dataset, json_file, indent=4)
-        
-        if use_global:
-            subprocess.run(f"sed -i -E 's#root://.*/store/#root://cms-xrd-global.cern.ch//store/#g' {partition_file}",shell=True)
+
+    print("Fileset for this group completed.\n")
 
 
+def update_partitions_to_global(job_dir, datasets):
+    global_redirector = "root://cms-xrd-global.cern.ch//store/"
 
-def resubmit_jobs(
-    job_dir,
-    jobnum_missing,
-    datasets_with_missing_jobs,
-    workflow,
-    year,
-    use_global,
-    memory,
-):
-    """Prepare and resubmit jobs for datasets with missing jobs, updating
-    requested memory."""
+    for dataset in datasets:
+        partition_file = job_dir / dataset / "partitions.json"
+        if not partition_file.exists():
+            print(f"[{dataset}] Missing partitions.json — skipping")
+            continue
+
+        partitions = json.loads(partition_file.read_text())
+        for partition in partitions.values():
+            for sample in partition.values():
+                sample["files"] = {
+                    (
+                        global_redirector + filename.split("/store/", 1)[1]
+                        if "/store/" in filename
+                        else filename
+                    ): tree
+                    for filename, tree in sample["files"].items()
+                }
+
+        partition_file.write_text(json.dumps(partitions, indent=4))
+        print(f"[{dataset}] Updated partitions to CMS global redirector")
+
+
+def resubmit_jobs(job_dir, jobnum_missing, datasets_with_missing_jobs, workflow, year, memory, cpus):
+    print("------------------------------------------------------------")
+    print("RESUBMITTING MISSING JOBS")
+    print("------------------------------------------------------------")
+
     to_resubmit = []
     for dataset in datasets_with_missing_jobs:
-        partition_file = job_dir / dataset / "partitions.json"
-        if use_global:
-            subprocess.run(
-                f"sed -i -E 's#root://.*/store/#root://cms-xrd-global.cern.ch//store/#g'"
-                f" {partition_file}",
-                shell=True,
-            )
+        missing_jobs = sorted(jobnum_missing[dataset])
         missing_file = job_dir / dataset / "missing.txt"
         with open(missing_file, "w") as f:
-            print(*sorted(jobnum_missing[dataset]), sep="\n", file=f)
+            print(*missing_jobs, sep="\n", file=f)
 
         condor_file = job_dir / dataset / f"{workflow}_{dataset}.sub"
         condor_backup = condor_file.with_name(condor_file.stem + "_all.sub")
-        subprocess.run(["cp", str(condor_file), str(condor_backup)])
+        if not condor_backup.exists():
+            subprocess.run(["cp", str(condor_file), str(condor_backup)], check=True)
 
-        submit_text = condor_file.read_text()
-        submit_text = submit_text.replace("jobnum.txt", "missing.txt")
-
+        submit_text = condor_file.read_text().replace("jobnum.txt", "missing.txt")
+        
+        # Inject dynamic requested memory and cpus 
         submit_text = re.sub(
-            r"(request_memory\s*=\s*)\d+", f"\\g<1>{memory}", submit_text
+            r"(request_memory\s*=\s*)\d+", f"\\g<1>{str(memory)}", submit_text
+        )
+        submit_text = re.sub(
+            r"(request_cpus\s*=\s*)\d+", f"\\g<1>{str(cpus)}", submit_text
         )
 
         condor_file.write_text(submit_text)
-        logging.info(
-            f"Condor file updated: {workflow}/{year}/{dataset}"
-        )
         to_resubmit.append(str(condor_file))
 
     for submit_file in to_resubmit:
-        subprocess.run(["condor_submit", submit_file])
+        print(f"Submitting {submit_file}")
+        subprocess.run(["condor_submit", submit_file], check=True)
+
+    print("Job resubmission completed.\n")
 
 
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
+def main():
     args = parse_args()
 
-    if args.label:
-        workflow_dir = f"{args.workflow}/{args.label}"
-    else:
-        workflow_dir = args.workflow
-
-    if args.reset or args.deep_reset:
-        subprocess.run(f"rm -rf condor/{workflow_dir}/{args.year}", shell=True)
-        subprocess.run(f"rm -rf condor/logs/{workflow_dir}/{args.year}", shell=True)
-        if args.deep_reset:
-            subprocess.run(f"rm -rf analysis/filesets/{args.year}_sites.yaml", shell=True)
-            subprocess.run(
-                f"rm -rf analysis/filesets/fileset_{args.year}_NANO_lxplus.json", shell=True
-            )
-        reset_cmd = f"python3 runner.py -w {args.workflow} -y {args.year} -m {args.memory} --workers {args.workers}"
-        if args.label:
-            reset_cmd += f" -l {args.label}"
-        if args.eos:
-            reset_cmd += " --eos"
-        if args.skipbadfiles:
-            reset_cmd += " --skipbadfiles"
-        if args.use_global:
-            reset_cmd += " --global"
-        if args.discovery == "rucio":
-            reset_cmd += " --rucio"
-        else:
-            reset_cmd += " --das"
-        subprocess.run(reset_cmd, shell=True)
-
-    output_dir = make_output_directory(args)
-    logging.info(f"Reading outputs from: {output_dir}\n")
-
     base_dir = Path.cwd()
+    output_dir = Path(make_output_directory(args))
     condor_dir = base_dir / "condor"
+    workflow_dir = f"{args.workflow}/{args.label}" if args.label else args.workflow
     job_dir = condor_dir / workflow_dir / args.year
     log_dir = condor_dir / "logs" / workflow_dir / args.year
     fileset_dir = base_dir / "analysis" / "filesets"
 
-    jobnum, jobnum_done, error_file = get_jobs_info(
+    if args.reset or args.deep_reset:
+        print("-" * 60)
+        print("RESET REQUESTED")
+        print("-" * 60)
+
+        subprocess.run(["rm", "-rf", job_dir], check=False)
+        subprocess.run(["rm", "-rf", log_dir], check=False)
+        
+        if args.deep_reset:
+            subprocess.run(["rm", "-rf", fileset_dir / f"{args.year}_sites.yaml"], check=False)
+            subprocess.run(["rm", "-rf", fileset_dir / f"fileset_{args.year}_NANO_lxplus.json"], check=False)
+
+        reset_cmd = [
+            "python3", "runner.py",
+            "-w", args.workflow,
+            "-y", args.year,
+            "--output_format", args.output_format,
+            "-m", str(args.memory),
+            "-c", str(args.cpus),
+            "--workers", str(args.workers),
+            "--executor", args.executor,
+        ]
+
+        if args.eos:
+            reset_cmd.append("--eos")
+        if args.label:
+            reset_cmd.extend(["-l", args.label])
+        if args.skipbadfiles:
+            reset_cmd.append("--skipbadfiles")
+        if args.use_global:
+            reset_cmd.append("--global")
+        if args.discovery == "rucio":
+            reset_cmd.append("--rucio")
+        else:
+            reset_cmd.append("--das")
+
+        print("Re-running full workflow via runner.py...")
+        subprocess.run(reset_cmd, check=True)
+        print("Reset complete.\n")
+
+    jobnum, jobnum_done, error_files = get_jobs_info(
         job_dir, output_dir, log_dir, args.output_format, args.hours_ago
     )
 
-    jobnum_missing, datasets_with_missing_jobs = print_job_status(jobnum, jobnum_done)
+    jobnum_missing, datasets_with_missing_jobs = print_job_status(
+        jobnum, jobnum_done, show_missing_datasets=False
+    )
 
-    if jobnum_missing and datasets_with_missing_jobs:
-        #site_errs = analyze_xrootd_errors(error_file)
+    if not datasets_with_missing_jobs:
+        return
 
-        #if site_errs and timed_input("Update input filesets?", timeout=3, default="y") in [
-        #    "y",
-        #    "yes",
-        #]:
-        #    update_input_filesets(
-        #        site_errs, args.year, fileset_dir, job_dir, datasets_with_missing_jobs, getattr(args,"global") 
-        #    )
+    missing_datasets = sorted(datasets_with_missing_jobs)
 
-        if timed_input("Update and resubmit jobs?", timeout=0, default="y") in ["y", "yes"]:
-            resubmit_jobs(
-                job_dir,
-                jobnum_missing,
-                datasets_with_missing_jobs,
-                args.workflow,
-                args.year,
-                args.use_global,
-                args.memory
+    if args.use_global:
+        print(f"Datasets with missing jobs ({len(missing_datasets)}/{len(jobnum)}):")
+        print("-" * 60)
+        for dataset in missing_datasets:
+            missing_partitions = get_missing_job_partitions(job_dir, dataset)
+            partitions = sort_partition_ids(missing_partitions)
+            partitions_text = ", ".join(partitions) or "not identified"
+            print(f"- [{dataset}] (Partitions: {partitions_text})")
+        
+        update_partitions_to_global(job_dir, missing_datasets)
+    else:
+        errors_by_dataset = {}
+
+        for dataset in missing_datasets:
+            err_files = error_files.get(dataset, [])
+
+            if not err_files and args.verbose:
+                print(
+                    f"[{dataset}] No recent error logs were found. "
+                    "Trying endpoint discovery from missing partitions."
+                )
+
+            errors_by_dataset[dataset] = analyze_xrootd_errors_by_dataset(
+                err_files, job_dir=job_dir, dataset=dataset, verbose=args.verbose
             )
+
+        print(f"Datasets with missing jobs ({len(missing_datasets)}/{len(jobnum)}):")
+        print("-" * 60)
+
+        for dataset in missing_datasets:
+            errors = errors_by_dataset.get(dataset, {})
+            missing_partitions = get_missing_job_partitions(job_dir, dataset)
+            partitions = sort_partition_ids(missing_partitions)
+            sites = sorted(errors.get("sites", set()))
+
+            partition_text = ", ".join(partitions) or "not identified"
+            site_text = ", ".join(sites) or "not identified"
+            print(f"- [{dataset}] (Partitions: {partition_text}) (Sites: {site_text})")
+
+        if args.verbose:
+            print("\n" + "=" * 60)
+            print("DETAILED XROOTD ERROR ANALYSIS")
+            print("=" * 60)
+            for dataset in missing_datasets:
+                errors = errors_by_dataset.get(dataset, {})
+                print(f"\nDataset: {dataset}")
+                print("  Error types: " + (", ".join(sorted(errors.get("error_types", set()))) or "unrecognized or no logs"))
+                print("  Endpoints: " + (", ".join(sorted(errors.get("endpoints", set()))) or "none identified"))
+                print("  Sites: " + (", ".join(sorted(errors.get("sites", set()))) or "none identified"))
+                print("  Current missing-job partitions: " + (", ".join(sort_partition_ids(get_missing_job_partitions(job_dir, dataset))) or "not identified"))
+
+        if args.executor == "iterative":
+            for dataset in sorted(errors_by_dataset):
+                update_executor_for_dataset(job_dir, dataset, executor="iterative")
+
+        dataset_sites = {
+            dataset: errors["sites"]
+            for dataset, errors in errors_by_dataset.items()
+            if errors.get("sites")
+        }
+
+        if not dataset_sites:
+            if args.verbose:
+                print("\nNo problematic sites could be mapped to site names. Input filesets will not be regenerated.")
+        else:
+            if args.single_fetch:
+                all_sites = set().union(*dataset_sites.values())
+                all_datasets = sorted(dataset_sites)
+                groups = {frozenset(all_sites): all_datasets}
+            else:
+                groups = group_datasets_by_sites(dataset_sites)
+
+            if args.verbose:
+                print("\nDatasets grouped by problematic sites:")
+                for sites, datasets in groups.items():
+                    print(f"  Sites: {', '.join(sorted(sites))}")
+                    print(f"  Datasets: {', '.join(sorted(datasets))}")
+
+            if timed_input("\nBuild input filesets for these groups? (y/n): ").strip().lower() in {"y", "yes"}:
+                for sites, datasets in groups.items():
+                    update_input_filesets_for_group(
+                        sites, args.year, fileset_dir, job_dir, datasets, args.discovery
+                    )
+
+    if timed_input("Resubmit missing jobs now? (y/n): ").strip().lower() in {"y", "yes"}:
+        resubmit_jobs(
+            job_dir, jobnum_missing, missing_datasets, args.workflow, args.year, args.memory, args.cpus
+        )
+
+
+if __name__ == "__main__":
+    main()

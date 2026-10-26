@@ -3,9 +3,9 @@ datasets:
     - muon
   mc:
     - dy_inclusive
-    #- singletop
+    - singletop
     - tt
-    #- wjets_inclusive
+    - wjets_inclusive
     - diboson
 object_selection:
   muons:
@@ -89,11 +89,12 @@ corrections:
   event_weights:
     genWeight: true
     pileupWeight: true
-    l1prefiringWeight: true
+    l1prefiringWeight: false
     lhepdfWeight: true
     lhescaleWeight: true
     partonshowerWeight: true
     topPtWeight: true
+    ISRWeight: false
     muon:
       - id: tight
       - iso: tight

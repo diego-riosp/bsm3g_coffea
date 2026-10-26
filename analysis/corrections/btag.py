@@ -62,8 +62,8 @@ class BTagCorrector:
         self._full_run = full_run
         self._variation = variation
 
-        self._nano_version = "9" if year.startswith("201") else "12"
-        self._tagger = "deepJet" if self._nano_version == "9" else "particleNet"
+        self._nano_version = "9" if year.startswith("201") else ("12" if year!="2024" else "15")
+        self._tagger = "deepJet" if self._nano_version == "9" else ("particleNet" if self._nano_version=="12" else "UParTAK4") 
 
         # check available btag SFs
         self._working_point_map = {"tight": "T", "medium": "M", "loose": "L"}

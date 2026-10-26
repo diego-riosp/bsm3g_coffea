@@ -16,7 +16,8 @@ from correctionlib.schemav2 import Correction, CorrectionSet
 
 
 # CorrectionLib files are available from
-POG_CORRECTION_PATH = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration"
+POG_CORRECTION_PATH = "/cvmfs/cms-griddata.cern.ch/cat/metadata/"
+XPOG_CORRECTION_PATH = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/"
 
 # summary of pog scale factors: https://cms-nanoaod-integration.web.cern.ch/commonJSONSFs/
 POG_JSONS = {
@@ -34,6 +35,18 @@ POG_JSONS = {
 }
 
 pog_years = {
+    "2016preVFP": "Run2-2016preVFP-UL-NanoAODv9",
+    "2016postVFP": "Run2-2016postVFP-UL-NanoAODv9",
+    "2017": "Run2-2017-UL-NanoAODv9",
+    "2018": "Run2-2018-UL-NanoAODv9",
+    "2022preEE": "Run3-22CDSep23-Summer22-NanoAODv12",
+    "2022postEE": "Run3-22EFGSep23-Summer22EE-NanoAODv12",
+    "2023preBPix": "Run3-23CSep23-Summer23-NanoAODv12",
+    "2023postBPix": "Run3-23DSep23-Summer23BPix-NanoAODv12",
+    "2024": "Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15",
+}
+
+xpog_years = {
     "2016postVFP": "2016postVFP_UL",
     "2016preVFP": "2016preVFP_UL",
     "2017": "2017_UL",
@@ -42,9 +55,8 @@ pog_years = {
     "2022postEE": "2022_Summer22EE",
     "2023preBPix": "2023_Summer23",
     "2023postBPix": "2023_Summer23BPix",
-    "2024": "2024_Summer24"
+    "2024": "2024_Summer24",
 }
-
 
 def get_pog_json(json_name: str, year: str) -> str:
     """
@@ -61,11 +73,25 @@ def get_pog_json(json_name: str, year: str) -> str:
         pog_json = POG_JSONS[json_name]
     else:
         print(f"No json for {json_name}")
-    if year == "2024" and (json_name.startswith("electron")):
-        EGM_CORRECTION_PATH = "/cvmfs/cms-griddata.cern.ch/cat/metadata/EGM/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/latest"
-        return f"{EGM_CORRECTION_PATH}/{pog_json[1]}"
-    else:  
-        return f"{POG_CORRECTION_PATH}/POG/{pog_json[0]}/{pog_years[year]}/{pog_json[1]}"
+    run_key = "2" if year.startswith("201") else "3"
+    if json_name == "met":
+        if run_key == "2":
+            return f"{POG_CORRECTION_PATH}/{pog_json[0]}/{pog_years[year]}/latest/{pog_json[1]}"
+        else: # met json name is pretty different for run 3
+            year_plus_prefix = year[:4] + re.search(r"post(.*)", year).group(1) if "post" in year else year[:4]
+            return f"{POG_CORRECTION_PATH}/{pog_json[0]}/{pog_years[year]}/latest/met_xyCorrections_{year[:4]}_{year_plus_prefix}.json.gz"
+    elif json_name == "pileup":
+        if year != "2024":
+            return f"{POG_CORRECTION_PATH}/{pog_json[0]}/{pog_years[year]}/latest/{pog_json[1]}"
+        else: # pileup weight json name is different for 2024
+            return f"{POG_CORRECTION_PATH}/{pog_json[0]}/{pog_years[year]}/latest/puWeights_CDEFGHI.json.gz"
+    elif json_name.startswith("electron"):
+        if year != "2024": # EGamma POG has better corretions within xpog integration
+            return f"{XPOG_CORRECTION_PATH}/{pog_json[0]}/{xpog_years[year]}/{pog_json[1]}"
+        else:
+            return f"{POG_CORRECTION_PATH}/{pog_json[0]}/{pog_years[year]}/latest/{pog_json[1]}"
+    else: # in general, use jsons stored into CAT metadata
+        return f"{POG_CORRECTION_PATH}/{pog_json[0]}/{pog_years[year]}/latest/{pog_json[1]}"
 
 
 def get_muon_hlt_json(year: str) -> str:

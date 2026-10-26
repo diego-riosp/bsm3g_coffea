@@ -672,3 +672,91 @@ def plot_sr_corrected_panel(
         ax=ax,
         fontsize=11,
     )
+
+def plot_syst_panel(
+    ax_top,
+    ax_bot,
+    diff_nom,
+    diff_recalc,
+    delta_data,
+    err_delta,
+    edges,
+    centers,
+    bin_widths,
+    workflow,
+    year,
+    lumi_val,
+):
+    """Renders top (shapes) and bottom (difference) panels for systematic nominal vs recalculated comparison."""
+    diff_nom_per_gev = diff_nom / bin_widths
+    diff_recalc_per_gev = diff_recalc / bin_widths
+
+    ax_top.stairs(
+        diff_nom_per_gev,
+        edges=edges,
+        color="black",
+        linewidth=1.5,
+        label=r"Nominal ($\mathrm{Data} - \mathrm{non}\text{-}t\bar{t}$)",
+    )
+    ax_top.stairs(
+        diff_recalc_per_gev,
+        edges=edges,
+        color="crimson",
+        linestyle="--",
+        linewidth=1.5,
+        label=r"Recalculated ($\mathrm{Data} - \mathrm{non}\text{-}t\bar{t}$)",
+    )
+    ax_top.set_ylabel("Events / GeV", fontsize=11)
+    ax_top.set_yscale("log")
+    ax_top.legend(
+        loc="upper right", fontsize=9, frameon=True, edgecolor="black"
+    )
+
+    pos_all = np.concatenate(
+        [
+            diff_nom_per_gev[diff_nom_per_gev > 0],
+            diff_recalc_per_gev[diff_recalc_per_gev > 0],
+        ]
+    )
+    y_min = np.min(pos_all) * 0.1 if len(pos_all) > 0 else 1e-4
+    y_max = np.maximum(np.max(diff_nom_per_gev), np.max(diff_recalc_per_gev))
+
+    ax_top.set_ylim(bottom=y_min, top=y_max * 20)
+
+    lumi_kwargs = {"lumi": lumi_val} if lumi_val else {}
+    hep.cms.label(
+        "Preliminary", data=True, year=year, ax=ax_top, fontsize=10, **lumi_kwargs
+    )
+
+    STYLE_TEXT_BOX = dict(
+        boxstyle="round,pad=0.2", facecolor="white", alpha=0.8, edgecolor="none"
+    )
+    ax_top.text(
+        0.05,
+        0.88,
+        f"{workflow}",
+        transform=ax_top.transAxes,
+        fontsize=10,
+        bbox=STYLE_TEXT_BOX,
+    )
+
+    # Bottom Panel: Absolute Difference (Nominal - Recalculated)
+    ax_bot.errorbar(
+        centers,
+        delta_data / bin_widths,
+        xerr=bin_widths / 2.0,
+        yerr=err_delta / bin_widths,
+        fmt="o",
+        color="purple",
+        markersize=4,
+        capsize=0,
+        label=r"$\Delta = \text{Nominal} - \text{Recalculated}$",
+    )
+    ax_bot.axhline(0, color="gray", linestyle=":", linewidth=1)
+    ax_bot.set_ylabel(r"$\Delta$ Events / GeV", fontsize=9)
+    ax_bot.set_xlabel(r"$m_{\mathrm{T}}$ [GeV]", fontsize=11)
+    ax_bot.set_xlim(edges[0], edges[-1])
+
+    ax_top.tick_params(axis="x", labelbottom=False, direction="in")
+    ax_top.tick_params(axis="y", labelsize=8, direction="in")
+    ax_bot.tick_params(axis="both", labelsize=8, direction="in")
