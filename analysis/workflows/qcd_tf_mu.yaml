@@ -71,7 +71,7 @@ event_selection:
     trigger: get_trigger_mask(events, hlt_paths, dataset, year)
     trigger_match: get_trigger_match_mask(events, hlt_paths, year, events.Muon)
     metfilters: get_metfilters_mask(events, year)
-    met_150: objects['met'].pt > 150
+    met_30: objects['met'].pt > 30
     hemcleaning: get_hemcleaning_mask(events, year)
     two_muon: ak.num(objects['muons']) == 2
     one_dimuon: ak.num(objects['dimuons']) == 1
@@ -87,7 +87,7 @@ event_selection:
       - trigger
       - trigger_match
       - metfilters
-      - met_150
+      - met_30
       - hemcleaning
       - two_muon
       - one_dimuon
@@ -100,7 +100,7 @@ event_selection:
       - trigger
       - trigger_match
       - metfilters
-      - met_150
+      - met_30
       - hemcleaning
       - two_muon
       - one_dimuon
@@ -113,7 +113,7 @@ event_selection:
       - trigger
       - trigger_match
       - metfilters
-      - met_150
+      - met_30
       - hemcleaning
       - two_muon
       - one_dimuon

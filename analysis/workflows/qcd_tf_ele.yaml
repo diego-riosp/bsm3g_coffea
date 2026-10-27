@@ -72,7 +72,7 @@ event_selection:
     trigger: get_trigger_mask(events, hlt_paths, dataset, year)
     trigger_match: get_trigger_match_mask(events, hlt_paths, year, events.Electron)
     metfilters: get_metfilters_mask(events, year)
-    met_150: objects['met'].pt > 150
+    met_30: objects['met'].pt > 30
     hemcleaning: get_hemcleaning_mask(events, year)
     two_electron: ak.num(objects['electrons']) == 2
     one_dielectron: ak.num(objects['dielectrons']) == 1
@@ -87,7 +87,7 @@ event_selection:
       - trigger
       - trigger_match
       - metfilters
-      - met_150
+      - met_30
       - hemcleaning
       - two_electron
       - one_dielectron
@@ -100,7 +100,7 @@ event_selection:
       - trigger
       - trigger_match
       - metfilters
-      - met_150
+      - met_30
       - hemcleaning
       - two_electron
       - one_dielectron
@@ -120,7 +120,7 @@ corrections:
     pileupWeight: true
     l1prefiringWeight: true
     lhepdfWeight: false
-    lhescaleWeight: false
+    lhescaleWeight: true
     partonshowerWeight: true
     topPtWeight: true
     topBoostWeight: false

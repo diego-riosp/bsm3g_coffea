@@ -59,12 +59,7 @@ def apply_met_phi_corrections(
     met_phi = np.clip(met_phi, -3.5, 3.5)
 
     data_kind = "mc" if hasattr(events, "genWeight") else "data"
-    if data_kind == "mc" and year in run_ranges.keys():
-        run = np.random.randint(
-            run_ranges[year][0], run_ranges[year][1], size=len(met_pt)
-        )
-    else:
-        run = events.run
+
 
     if run_key == "run3" and year != "2024":
         # prepare common evaluation arguments (excluding pt_phi and variation)
@@ -138,6 +133,37 @@ def apply_met_phi_corrections(
 
         # attach xy_corr field to events.PuppiMET (or met_key)
         events[met_key, "xycorr"] = xy_corr_systematics
+    else:
+        if data_kind == "mc" and year in run_ranges.keys():
+            run = np.random.randint(
+                run_ranges[year][0], run_ranges[year][1], size=len(met_pt)
+            )
+        else:
+            run = events.run
+        # evaluate nominal corrections for Run 2 and 2024
+        pt_corr_file = (
+            f"pt_metphicorr_pfmet_{data_kind}"
+            if run_key == "run2"
+            else f"pt_metphicorr_puppimet_{data_kind}"
+        )
+        events[met_key, "pt"] = cset[pt_corr_file].evaluate(
+            met_pt.to_numpy(),
+            met_phi.to_numpy(),
+            events.PV.npvsGood.to_numpy(),
+            run,
+        )
+
+        phi_corr_file = (
+            f"phi_metphicorr_pfmet_{data_kind}"
+            if run_key == "run2"
+            else f"phi_metphicorr_puppimet_{data_kind}"
+        )
+        events[met_key, "phi"] = cset[phi_corr_file].evaluate(
+            met_pt.to_numpy(),
+            met_phi.to_numpy(),
+            events.PV.npvsGood.to_numpy(),
+            run,
+        )
 
 def corrected_polar_met(
     met_pt,
